@@ -16,7 +16,7 @@ class Runner {
         suspendCancellableCoroutine { cont ->
             thread {
                 log.appendLine("Starting program execution...")
-                val process = ProcessBuilder("npm", "run")
+                val process = ProcessBuilder("npm", "run", "run")
                     .directory(jsEnvDir.toFile())
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .redirectError(ProcessBuilder.Redirect.PIPE)
@@ -46,16 +46,16 @@ class Runner {
                     }
                 }
 
-                val timeout = process.waitFor(1, MINUTES)
+                val timeout = !process.waitFor(1, MINUTES)
                 val exitCode = if (timeout) -1 else process.exitValue()
 
                 if (exitCode == 0) {
                     cont.resumeWith(Result.success(Unit))
                 } else if (timeout) {
-                    log.appendLine("Program execution timed out (1 minute timeout)")
+                    log.appendLine("Program execution timed out (1 minute timeout)", error = true)
                     cont.resumeWith(Result.failure(GenerationError("Program failed to finish in under 1 minute")))
                 } else {
-                    log.appendLine("Program execution finished with exit code $exitCode")
+                    log.appendLine("Program execution finished with exit code $exitCode", error = true)
                     val errorFile = lock.withLock { errorLines.toString() }
                     cont.resumeWith(Result.failure(GenerationError(errorFile)))
                 }

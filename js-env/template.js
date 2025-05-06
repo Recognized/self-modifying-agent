@@ -3,7 +3,8 @@ import fs from "fs";
 
 const globalMemory = new Memory()
 
-async function main() {
+// Must be exported
+export async function main() {
 
     console.log("... doing something")
 

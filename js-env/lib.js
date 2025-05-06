@@ -11,7 +11,7 @@ const port = 2205
 const serverUrl = `http://localhost:${port}`
 
 export async function reflect(key, ...args) {
-    throw ReflectSignal(key, args)
+    throw new ReflectSignal(key, args)
 }
 
 export class ReflectSignal extends Error {

@@ -20,17 +20,18 @@ import kotlin.coroutines.CoroutineContext
 var task: Task = Task()
 
 class LogCollector {
-    private val lines = mutableListOf<Pair<String, Boolean>>()
+    private val lines = mutableListOf<LogLine>()
+    private var id = 0
 
     @Synchronized
     fun appendLine(line: String, error: Boolean = false) {
         line.lines().forEach {
-            lines.add(it to error)
+            lines.add(LogLine(id++.toString(), it, error))
         }
     }
 
     @Synchronized
-    fun lines(): List<Pair<String, Boolean>> {
+    fun lines(): List<LogLine> {
         return lines.toList()
     }
 }
@@ -52,7 +53,7 @@ class Task : CoroutineScope {
     private fun fail(message: String): Nothing {
         failed = true
         log.appendLine(message)
-        log.appendLine("Agent failed too many times in a row. Stopping.")
+        log.appendLine("Agent failed too many times in a row. Stopping.", error = true)
         error("Failed without chance to recover")
     }
 
@@ -80,7 +81,7 @@ class Task : CoroutineScope {
     }
 
     suspend fun handleError(error: String) {
-        log.appendLine("Error detected:\n$error")
+        log.appendLine("Error detected:\n$error", error = true)
         log.appendLine("Attempting to fix... ")
         val editedCode = complete(
             listOf(

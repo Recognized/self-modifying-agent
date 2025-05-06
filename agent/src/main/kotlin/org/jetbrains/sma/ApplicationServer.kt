@@ -71,14 +71,15 @@ suspend fun awaitServer(maxRetries: Int = 30, delayMillis: Long = 1000L): Boolea
     return false
 }
 
-class LogLine(val line: String, val isError: Boolean)
+class LogLine(val id: String, val line: String, val error: Boolean)
 
 class TaskStatus(
     val iterationIndex: Int,
     val prompt: String,
     val completed: Boolean,
     val log: Array<LogLine>,
-    val startedAt: Long
+    val startedAt: Long,
+    val code: String
 )
 
 fun Application.configureRouting() {
@@ -91,16 +92,11 @@ fun Application.configureRouting() {
                     task.iterationIndex,
                     task.prompt,
                     task.completed,
-                    task.log.lines().takeLast(1000).map {
-                        LogLine(it.first, it.second)
-                    }.toTypedArray(),
-                    task.startedAt
+                    task.log.lines().takeLast(1000).toTypedArray(),
+                    task.startedAt,
+                    task.code
                 )
             )
-        }
-
-        get("/code") {
-            call.respondText(task.code)
         }
 
         post("/prompt") {

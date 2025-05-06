@@ -2,6 +2,7 @@
 <head>
     <title>Self-Modifying JS Agent</title>
     <link href="prism.css" rel="stylesheet"/>
+    <link type="image/jpeg" rel="icon" href="favicon.jpeg"/>
 </head>
 <style>
     * {
@@ -29,8 +30,17 @@
     body {
         height: 100vh;
         max-height: 100vh;
+        display: flex;
+        flex-direction: column;
 
         overflow: hidden;
+
+        padding-bottom: 48px;
+    }
+
+    .v-shrink {
+        flex-shrink: 1;
+        min-height: 0;
     }
 
     .bg {
@@ -61,16 +71,18 @@
     }
 
     .program-container {
-        max-width: 80%;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
         width: 100%;
 
-        margin-top: 16px;
         overflow: hidden;
         border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .program-header {
+        flex-grow: 0;
         background-color: rgb(99, 99, 99);
         color: white;
         font-size: 13px;
@@ -82,6 +94,7 @@
     }
 
     .agent-pre {
+        flex-grow: 1;
         width: 100%;
         overflow-x: auto;
         overflow-y: auto;
@@ -89,6 +102,60 @@
         margin: 0 !important;
 
         padding: 16px;
+    }
+
+    .flare-effect {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px; /* Start small */
+        height: 20px; /* Start small */
+        background: radial-gradient(circle,
+        rgba(255, 255, 220, 0.9) 0%,
+        rgba(255, 255, 180, 0.7) 30%,
+        rgba(255, 220, 100, 0.3) 70%,
+        rgba(255, 200, 50, 0) 100%);
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0); /* Center and start scaled down */
+        opacity: 0;
+        pointer-events: none; /* Don't block clicks */
+        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 0.4s ease-out;
+    }
+
+    .flare-effect.visible {
+        transform: translate(-50%, -50%) scale(15); /* Scale up to cover (adjust as needed) */
+        opacity: 1;
+        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
+        opacity 0.3s ease-in;
+    }
+
+    /* For fading out */
+    .flare-effect.hiding {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(16); /* Optional: slightly larger on fade out */
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+
+    .console-pre {
+        flex-grow: 1;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+
+        margin: 0 !important;
+
+        padding: 16px;
+
+        background-color: #282c34; /* Dark background */
+        color: #abb2bf; /* Light grey text */
+        border-radius: 5px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9em;
+        white-space: pre-wrap; /* Preserve whitespace and wrap lines */
+        word-break: break-all; /* Break long words if necessary */
+        flex-grow: 1;
+        min-height: 0;
     }
 
     .prompt {
@@ -111,10 +178,23 @@
     .prompt-container {
         position: relative;
         display: flex;
-        flex: 1 1 100%;
-        max-width: 80%;
-        width: 100%;
+        flex-grow: 1;
+        align-self: stretch;
         flex-direction: row;
+    }
+
+    .horizontal {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .grow {
+        flex-grow: 1;
+        align-self: stretch;
+    }
+
+    .gap16 {
+        gap: 16px;
     }
 
     .send-button {
@@ -132,25 +212,196 @@
         background-color: rgb(246, 82, 22);
     }
 
+    .log-line {
+    }
+
+    .error {
+        color: #e06c75; /* Light red for errors */
+        font-weight: bold;
+    }
+
+    .left-block {
+        flex-grow: 1;
+        max-width: 60%;
+    }
+
+    .right-block {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        max-width: 40%;
+        min-height: 0;
+        flex-shrink: 1;
+    }
+
     .send-button:hover {
         background-color: rgb(202, 67, 19);;
     }
 </style>
 <script>
-    let lastCode = ""
-    setInterval(() => {
-        fetch("/code", {
-            method: "GET"
-        }).then(r => r.text())
-            .then(async (code) => {
-                const codeEl = document.getElementById('code')
-                if (lastCode !== code) {
-                    lastCode = code
-                    codeEl.innerHTML = code
-                    Prism.highlightAll()
+    /**
+     * Shows a flare effect over a target element, executes a callback
+     * to change content, then fades the flare out.
+     * @param {HTMLElement} targetElement - The element to show the flare over.
+     * @param {Function} contentChangeCallback - Function to execute to change content.
+     * @param {Object} [options] - Optional parameters.
+     * @param {number} [options.flareInDuration=500] - Duration of flare-in animation in ms.
+     * @param {number} [options.flareOutDuration=400] - Duration of flare-out animation in ms.
+     */
+    function showFlareEffect(targetElement, contentChangeCallback, options = {}) {
+        if (!targetElement || typeof contentChangeCallback !== 'function') {
+            console.error("Target element or callback missing.");
+            if (typeof contentChangeCallback === 'function') contentChangeCallback(); // Still run callback
+            return;
+        }
+
+        const flareInDuration = options.flareInDuration || 500;
+        const flareOutDuration = options.flareOutDuration || 400;
+
+        // 1. Ensure target has position: relative
+        const originalPosition = getComputedStyle(targetElement).position;
+        if (originalPosition === 'static') {
+            targetElement.style.position = 'relative';
+        }
+
+        // 2. Create and append flare
+        const flare = document.createElement('div');
+        flare.className = 'flare-effect';
+        targetElement.appendChild(flare);
+
+        // 3. Trigger "in" animation (force reflow before adding .visible class)
+        // Reading a property like offsetHeight forces a reflow
+        void flare.offsetHeight; // Or requestAnimationFrame(() => flare.classList.add('visible'));
+        flare.classList.add('visible');
+
+        // 4. Wait for "in" animation to complete
+        setTimeout(() => {
+            // 5. Execute content change
+            contentChangeCallback();
+
+            // 6. Trigger "out" animation
+            flare.classList.remove('visible'); // Remove 'visible'
+            flare.classList.add('hiding');     // Add 'hiding' for distinct out transition
+
+            // 7. Wait for "out" animation to complete then remove flare
+            setTimeout(() => {
+                flare.remove();
+                // Restore original position if we changed it
+                if (originalPosition === 'static') {
+                    targetElement.style.position = originalPosition;
                 }
+            }, flareOutDuration);
+
+        }, flareInDuration);
+    }
+
+    function formatDuration(ms) {
+        if (ms < 0) ms = 0; // Treat negative durations as 0
+
+        const time = {
+            d: Math.floor(ms / (1000 * 60 * 60 * 24)),
+            h: Math.floor((ms / (1000 * 60 * 60)) % 24),
+            m: Math.floor((ms / (1000 * 60)) % 60),
+            s: Math.floor((ms / 1000) % 60),
+            // ms: Math.floor(ms % 1000) // If you wanted to show milliseconds too
+        };
+
+        // Build the string
+        const parts = [];
+
+        if (time.d > 0) {
+            parts.push(time.d + 'd');
+        }
+        if (time.h > 0) {
+            parts.push(time.h + 'h');
+        }
+        if (time.m > 0) {
+            parts.push(time.m + 'm');
+        }
+
+        // Always show seconds if other parts are not there, or if seconds > 0
+        // This ensures "0s" for ms < 1000 and also includes seconds when minutes/hours are present.
+        if (time.s > 0 || parts.length === 0) {
+            parts.push(time.s + 's');
+        }
+
+        // If after all checks, parts is still empty (e.g. ms was 0, or became 0 after flooring),
+        // default to "0s". This is already handled by the `time.s > 0 || parts.length === 0` logic
+        // because if ms is 0, time.s will be 0, and parts.length will be 0, so "0s" gets pushed.
+
+        return parts.join(' ');
+    }
+
+    let lastStatus = null
+    setInterval(() => {
+        fetch("/status", {
+            method: "GET"
+        }).then(r => r.json())
+            .then(async (status) => {
+                console.log(status)
+                if (status.code) {
+                    const code = status.code
+                    const codeEl = document.getElementById('code')
+                    if (!lastStatus || lastStatus.code !== code) {
+                        showFlareEffect(codeEl, () => {
+                            codeEl.innerHTML = code
+                            Prism.highlightAll()
+                        })
+                    }
+                }
+
+                if (status.iterationIndex) {
+                    if (!lastStatus || lastStatus.iterationIndex !== status.iterationIndex) {
+                        document.getElementById('iteration-number').textContent = status.iterationIndex
+                    }
+                }
+
+                if (status.log) {
+                    const console = document.getElementById('console')
+                    const newLogLineIds = new Set()
+                    for (const log of status.log) {
+                        newLogLineIds.add(log.id)
+                    }
+                    const oldLogLineIds = new Set()
+
+                    if (lastStatus) {
+                        for (const prevLog of lastStatus.log) {
+                            const oldLog = document.getElementById(`log-${prevLog.id}`)
+                            if (oldLog && !newLogLineIds.has(prevLog.id)) {
+                                oldLog.remove()
+                            }
+                            oldLogLineIds.add(prevLog.id)
+                        }
+                    }
+
+                    for (const log of status.log) {
+                        if (!oldLogLineIds.has(log.id)) {
+                            const lineElement = document.createElement('span');
+                            lineElement.textContent = log.line;
+                            lineElement.classList.add('log-line');
+                            lineElement.id = `log-${log.id}`;
+
+                            if (log.error) {
+                                lineElement.classList.add('error');
+                            }
+
+                            console.appendChild(lineElement);
+                            console.appendChild(document.createTextNode('\n'));
+                        }
+                    }
+                }
+
+                lastStatus = status
             })
     }, 500)
+
+    setInterval(() => {
+        const timeElapsed = document.getElementById('time-elapsed')
+        if (lastStatus && lastStatus.startedAt) {
+            const startedAtMs = lastStatus.startedAt
+            timeElapsed.textContent = formatDuration(Date.now() - startedAtMs)
+        }
+    }, 1000)
 
     function sendPrompt() {
         const prompt = document.getElementById('prompt').value
@@ -162,23 +413,35 @@
     }
 
 </script>
-<body>
+<body class="v-shrink">
 <div class="bg"></div>
-<div class="vertical centered">
+<div class="vertical centered v-shrink">
     <h1>Self-modifying JS Agent</h1>
-    <div class="prompt-container">
-        <textarea id="prompt" class="prompt" aria-multiline="true" placeholder="What do you want me to do?">I want you to add information that this repo is created by Vladislav Saifulin</textarea>
-        <button class="send-button" onclick="sendPrompt()">Send</button>
-    </div>
-    <div class="program-container">
-        <div class="program-header">
-            <span>Program</span>
-            <span>Iteration:</span>
-            <span id="iteration-number">0</span>
-            <span>Time elapsed:</span>
-            <span id="time-elapsed"></span>
+    <div class="horizontal gap16 grow v-shrink">
+        <div class="vertical centered grow left-block gap16 v-shrink">
+            <div class="prompt-container">
+                <textarea id="prompt" class="prompt" aria-multiline="true" placeholder="What do you want me to do?">I want you to add information that this repo is created by Vladislav Saifulin</textarea>
+                <button class="send-button" onclick="sendPrompt()">Send</button>
+            </div>
+            <div class="program-container v-shrink">
+                <div class="program-header">
+                    <span>Program</span>
+                    <span>Iteration:</span>
+                    <span id="iteration-number">0</span>
+                    <span>Time elapsed:</span>
+                    <span id="time-elapsed"></span>
+                </div>
+                <pre class="agent-pre"><code class="language-javascript" id="code"></code></pre>
+            </div>
         </div>
-        <pre class="agent-pre"><code class="language-javascript" id="code"></code></pre>
+        <div class="right-block v-shrink">
+            <div class="program-container v-shrink">
+                <div class="program-header">
+                    <span>Console log</span>
+                </div>
+                <pre class="console-pre"><code id="console"></code></pre>
+            </div>
+        </div>
     </div>
 </div>
 <script src="prism.js"></script>
