@@ -1,0 +1,13 @@
+{
+  "name": "js-env",
+  "version": "1.0.0",
+  "main": "lib.js",
+  "scripts": {
+    "run": "node agent.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module"
+}

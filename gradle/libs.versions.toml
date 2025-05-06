@@ -1,0 +1,444 @@
+# This file aims to define dependency versions and aliases outside of buildSrc.
+# The values are used both by buildSrc and by the main build.
+# https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
+
+[versions]
+
+# core
+kotlin-lang = "2.1.20" # some of the Kotlin versions can be overridden programmatically
+kotlin-plugin = "2.1.20" # see common.versions.gradle.kts
+
+elasticsearch = "7.17.7" # https://github.com/elastic/elasticsearch/releases
+elasticsearch-client-version = "7.17.7" # https://github.com/elastic/elasticsearch/releases
+exposed = "0.32.x-space-104" # https://github.com/JetBrains/Exposed/releases
+hikari-pool = "5.1.0" # https://github.com/brettwooldridge/HikariCP
+jackson = "2.15.2" # https://github.com/FasterXML/jackson
+joda-time = "2.14.0" # https://github.com/JodaOrg/joda-time/releases
+kotlinx-atomicfu = "0.27.0" # https://github.com/Kotlin/kotlinx.atomicfu/releases
+kotlinx-coroutines = "1.10.2" # https://github.com/Kotlin/kotlinx.coroutines/releases
+kotlinx-datetime = "0.6.2" # https://github.com/Kotlin/kotlinx-datetime/releases
+kotlinx-html = "0.12.0" # https://github.com/Kotlin/kotlinx.html/releases
+kotlinx-serialization = "1.8.1" # https://github.com/Kotlin/kotlinx.serialization/releases
+ktor = "3.1.2" # https://github.com/ktorio/ktor/releases
+log4j-to-slf4j = "2.24.1" # https://github.com/apache/logging-log4j2/releases
+logback = "1.5.12" # https://github.com/qos-ch/logback/releases
+postgresql-driver = "42.6.2" # https://jdbc.postgresql.org/download
+slf4j = "2.0.16" # https://github.com/qos-ch/slf4j/releases
+woodstox = "5.1.0" # https://github.com/FasterXML/woodstox
+
+# kotlin-wrappers
+kotlin-browser = "2025.4.16" # https://github.com/JetBrains/kotlin-wrappers/releases
+kotlin-css = "2025.4.16" # https://github.com/JetBrains/kotlin-wrappers/releases
+kotlin-electron = "2025.4.16-33.2.1" # https://github.com/JetBrains/kotlin-wrappers/releases
+kotlin-react = "2025.4.16-19.1.0" # https://github.com/JetBrains/kotlin-wrappers/releases
+kotlin-styled-next = "2025.4.16" # https://github.com/JetBrains/kotlin-wrappers/releases
+
+# aws
+aws-java-sdk = "1.11.978" # https://github.com/aws/aws-sdk-java
+aws-kinesis-client = "2.6.0" # https://github.com/awslabs/amazon-kinesis-client
+aws-sdk = "2.20.57" # https://github.com/aws/aws-sdk-java-v2
+
+# azure
+azure-identity = "1.11.4" # https://mvnrepository.com/artifact/com.azure/azure-identity
+azure-storage-blob = "12.25.3" # https://mvnrepository.com/artifact/com.azure/azure-storage-blob
+
+# grazie
+grazie-sdk = "0.4.42" # https://jetbrains.team/p/grazi/packages/maven/grazie-platform
+
+# space
+space-sdk-generator = "0.4.5"
+space-twemoji = "14.0.7"
+
+# google cloud
+gcp-bigquery-version = "2.42.0" # https://mvnrepository.com/artifact/com.google.cloud/google-cloud-bigquery
+gcp-nio = "0.123.10" # https://mvnrepository.com/artifact/com.google.cloud/google-cloud-nio
+gcp-storage-version = "2.36.1" # https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage
+
+# others
+
+allure = "2.12.0" # https://github.com/allure-framework/allure-gradle
+android-tools-build-gradle = "8.8.0-alpha05" # https://developer.android.com/build/releases/gradle-plugin
+apache-batik = "1.17" # https://github.com/apache/xmlgraphics-batik
+apache-commons-cli = "1.9.0" # https://github.com/apache/commons-cli
+apache-commons-compress = "1.27.1" # https://github.com/apache/commons-compress
+apache-commons-io = "2.16.1" # https://github.com/apache/commons-io
+apache-commons-lang3 = "3.16.0" # https://github.com/apache/commons-lang
+apache-commons-text = "1.11.0" # https://github.com/apache/commons-text
+apache-commons-codec = "1.17.1" # https://github.com/apache/commons-codec
+apache-httpcomponents-core = "4.4.12" # https://github.com/apache/httpcomponents-core
+apache-httpcomponents-httpclient = "4.5.14" # https://github.com/apache/httpcomponents-client
+apache-tika = "2.9.2" # https://github.com/apache/tika
+assertj = "3.26.3" # https://github.com/assertj/assertj
+assertk = "0.28.1" # https://github.com/willowtreeapps/assertk
+auth0 = "4.4.0" # https://github.com/auth0/java-jwt
+binary-compatibility-validator = "0.16.3" # https://github.com/Kotlin/binary-compatibility-validator
+bouncycastle = "1.80" # https://github.com/bcgit/bc-java
+bucket4j = "8.14.0" # https://github.com/bucket4j/bucket4j
+caffeine-cache-version = "3.1.8" # https://github.com/ben-manes/caffeine
+caldav4j = "1.0.5" # https://github.com/caldav4j/caldav4j
+clikt = "3.5.4" # https://github.com/ajalt/clikt
+cron-utils = "9.2.1" # https://github.com/jmrozanec/cron-utils
+docker-java = "3.4.0" # https://github.com/docker-java/docker-java
+dokka-plugin = "1.8.20" # https://github.com/Kotlin/dokka
+download-task = "5.6.0" # https://github.com/michel-kraemer/gradle-download-task
+eddsa = "0.3.0" # https://github.com/str4d/ed25519-java
+elasticmq-rest-sqs = "0.14.6" # https://mvnrepository.com/artifact/org.elasticmq/elasticmq-rest-sqs_2.11
+gradle-docker-compose-plugin = "0.17.12" # https://github.com/avast/gradle-docker-compose-plugin
+gradle-license-report = "2.9" # https://github.com/jk1/Gradle-License-Report
+gradle-node-plugin = "7.0.2" # https://github.com/node-gradle/gradle-node-plugin
+gson = "2.11.0" # https://github.com/google/gson
+guava = "33.3.0-jre" # https://github.com/google/guava
+fastutil = "8.5.13" # https://fastutil.di.unimi.it/
+javax-mail-impl = "1.6.2" # https://mvnrepository.com/artifact/javax.mail/javax.mail-api
+jetbrains-markdown = "0.7.3" # https://github.com/JetBrains/markdown
+json-schema-validator = "1.0.66" # https://github.com/networknt/json-schema-validator
+jsonpath = "2.9.0" # https://github.com/json-path/JsonPath
+jsoup = "1.18.1" # https://github.com/jhy/jsoup
+junit4 = "4.13.2" # https://github.com/junit-team/junit4
+junit4-params = "1.1.1" # https://github.com/Pragmatists/JUnitParams
+junit5 = "5.11.3" # https://github.com/junit-team/junit5
+kotlin-poet = "1.0.0" # https://github.com/square/kotlinpoet
+mockk = "1.13.12" # https://github.com/mockk/mockk
+nimbus-jose-jwt = "9.41.1" # https://central.sonatype.com/artifact/com.nimbusds/nimbus-jose-jwt
+okhttp = "4.12.0" # https://github.com/square/okhttp/releases
+oshi-core = "5.7.2" # https://github.com/oshi/oshi
+redisson = "3.45.1" # https://github.com/redisson/redisson
+reflections = "0.10.2" # https://github.com/ronmamo/reflections
+shadow = "8.3.1" # https://github.com/GradleUp/shadow
+snakeyaml = "2.3" # https://mvnrepository.com/artifact/org.yaml/snakeyaml
+subethasmtp = "3.1.7" # https://github.com/voodoodyne/subethasmtp
+testcontainers = "1.19.8" # https://github.com/testcontainers/testcontainers-java
+typesafe-config = "1.4.3" # https://github.com/lightbend/config
+vdurmont-semver4j = "3.1.0" # https://github.com/vdurmont/semver4j
+
+# prometheus
+prometheus-jmx-collector = "0.17.0" # https://mvnrepository.com/artifact/io.prometheus.jmx/collector
+prometheus-simpleclient = "0.15.0" # https://mvnrepository.com/artifact/io.prometheus/simpleclient
+
+# vcs hosting
+jgit = "jb-540" # https://buildserver.labs.intellij.net/buildConfiguration/Circlet_JGitFork
+sshd = "2.15.0" # https://github.com/apache/mina-sshd
+
+# ij parsers
+fleet-parsers = "0.3.182" # https://jetbrains.team/p/fleet/code/fleet-parser-collection/files/README.md
+# https://packages.jetbrains.team/maven/p/ij/intellij-dependencies/
+podkova = "0.1.14"        # https://buildserver.labs.intellij.net/buildConfiguration/Circlet_PublishPodkovaMap
+fuzzix = "0.1.37"         # https://buildserver.labs.intellij.net/buildConfiguration/Circlet_PublishFuzzix
+
+# packages
+maven-libs-version = "3.6.2" # https://github.com/apache/maven
+
+# npm
+copy-webpack-plugin-version = "13.0.0" # https://www.npmjs.com/package/copy-webpack-plugin
+cross-env-version = "7.0.3" # https://www.npmjs.com/package/cross-env
+css-loader-version = "7.1.2" # https://www.npmjs.com/package/css-loader
+fake-web-socket-server-version = "1.1.2" # https://www.npmjs.com/package/fake-web-socket-server
+handlebars-loader-version = "1.7.3" # https://www.npmjs.com/package/handlebars-loader
+handlebars-version = "4.7.8" # https://www.npmjs.com/package/handlebars
+html-loader-version = "5.1.0" # https://www.npmjs.com/package/html-loader
+html-webpack-plugin-version = "5.6.3" # https://www.npmjs.com/package/html-webpack-plugin
+js-joda-timezone-version = "2.21.2" # https://www.npmjs.com/package/@js-joda/timezone
+karma-version = "6.4.4" # https://www.npmjs.com/package/karma
+karma-viewport-version = "1.0.9" # https://www.npmjs.com/package/karma-viewport
+license-webpack-plugin-version = "4.0.2" # https://www.npmjs.com/package/license-webpack-plugin
+mocha-version = "11.1.0" # https://www.npmjs.com/package/mocha
+oss-license-name-to-url-version = "1.2.1" # https://www.npmjs.com/package/oss-license-name-to-url
+plist-version = "3.1.0" # https://www.npmjs.com/package/plist
+postcss-hover-prefix-version = "0.0.1" # https://www.npmjs.com/package/postcss-hover-prefix
+postcss-loader-version = "8.1.1" # https://www.npmjs.com/package/postcss-loader
+postcss-version = "8.5.3" # https://www.npmjs.com/package/postcss
+properties-reader-version = "2.3.0" # https://www.npmjs.com/package/properties-reader
+react-version = "18.3.1" # https://www.npmjs.com/package/react
+react-testing-library-version = "16.2.0" # https://www.npmjs.com/package/@testing-library/react
+react-testing-library-dom-version = "10.4.0" # https://www.npmjs.com/package/@testing-library/dom
+source-map-loader-version = "5.0.0" # https://www.npmjs.com/package/source-map-loader
+string-replace-loader-version = "3.1.0" # https://www.npmjs.com/package/string-replace-loader
+style-loader-version = "4.0.0" # https://www.npmjs.com/package/style-loader
+terser-webpack-plugin-version = "5.3.14" # https://www.npmjs.com/package/terser-webpack-plugin
+webpack-bundle-analyzer-version = "4.10.2" # https://www.npmjs.com/package/webpack-bundle-analyzer
+webpack-cli-version = "6.0.1" # https://www.npmjs.com/package/webpack-cli
+webpack-dev-server-version = "5.2.0" # https://www.npmjs.com/package/webpack-dev-server
+webpack-version = "5.98.0" # https://www.npmjs.com/package/webpack
+ws-version = "8.18.0" # https://www.npmjs.com/package/ws, dependency of ktor-client, do not update past the major version specified in https://github.com/ktorio/ktor/blob/main/gradle/libs.versions.toml
+
+# node
+node-version = "22.14.0" # https://nodejs.org/en/download/
+yarn-version = "1.22.22" # https://www.npmjs.com/package/yarn
+
+# slack
+slack-sdk-version = "1.44.1" # https://github.com/slackapi/java-slack-sdk/releases
+
+[libraries]
+
+# kotlin
+kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-plugin" }
+kotlin-poet = { module = "com.squareup:kotlinpoet", version.ref = "kotlin-poet" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin-lang" }
+kotlin-stdlib-core = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin-lang" }
+kotlin-stdlib-jdk7 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk7", version.ref = "kotlin-lang" }
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlin-lang" }
+kotlin-test-core = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin-lang" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-lang" }
+kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin-lang" }
+kotlin-metadata-jvm = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin-lang" }
+
+# kotlinx
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-jdk8 = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+kotlinx-html-core = { module = "org.jetbrains.kotlinx:kotlinx-html", version.ref = "kotlinx-html" }
+kotlinx-html-js = { module = "org.jetbrains.kotlinx:kotlinx-html-js", version.ref = "kotlinx-html" }
+kotlinx-html-jvm = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version.ref = "kotlinx-html" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+# ktor client
+ktor-client-apache = { module = "io.ktor:ktor-client-apache", version.ref = "ktor" }
+ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-core-jvm = { module = "io.ktor:ktor-client-core-jvm", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-encoding-jvm = { module = "io.ktor:ktor-client-encoding-jvm", version.ref = "ktor" }
+ktor-client-jackson = { module = "io.ktor:ktor-client-jackson", version.ref = "ktor" }
+ktor-client-java = { module = "io.ktor:ktor-client-java", version.ref = "ktor" }
+ktor-client-json = { module = "io.ktor:ktor-client-json", version.ref = "ktor" }
+ktor-client-json-jvm = { module = "io.ktor:ktor-client-json-jvm", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging-jvm", version.ref = "ktor" }
+ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
+ktor-client-mock-jvm = { module = "io.ktor:ktor-client-mock-jvm", version.ref = "ktor" }
+ktor-client-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+ktor-client-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-websockets = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
+
+# ktor server
+ktor-server-auth = { module = "io.ktor:ktor-server-auth", version.ref = "ktor" }
+ktor-server-call-id = { module = "io.ktor:ktor-server-call-id", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
+ktor-server-conditional-headers = { module = "io.ktor:ktor-server-conditional-headers", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-cio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
+ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers", version.ref = "ktor" }
+ktor-server-double-receive = { module = "io.ktor:ktor-server-double-receive", version.ref = "ktor" }
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
+ktor-server-html-builder = { module = "io.ktor:ktor-server-html-builder", version.ref = "ktor" }
+ktor-server-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
+ktor-server-jetty = { module = "io.ktor:ktor-server-jetty", version.ref = "ktor" }
+ktor-server-partial-content = { module = "io.ktor:ktor-server-partial-content", version.ref = "ktor" }
+ktor-server-request-validation = { module = "io.ktor:ktor-server-request-validation", version.ref = "ktor" }
+ktor-server-resources = { module = "io.ktor:ktor-server-resources", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
+
+# ktor misc
+ktor-http-jvm = { module = "io.ktor:ktor-http-jvm", version.ref = "ktor" }
+ktor-io-jvm = { module = "io.ktor:ktor-io-jvm", version.ref = "ktor" }
+ktor-network = { module = "io.ktor:ktor-network", version.ref = "ktor" }
+
+# kotlin-wrappers
+kotlin-browser = { module = "org.jetbrains.kotlin-wrappers:kotlin-browser", version.ref = "kotlin-browser" }
+kotlin-css = { module = "org.jetbrains.kotlin-wrappers:kotlin-css", version.ref = "kotlin-css" }
+kotlin-electron = { module = "org.jetbrains.kotlin-wrappers:kotlin-electron", version.ref = "kotlin-electron" }
+kotlin-react-core = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-legacy", version.ref = "kotlin-react" }
+kotlin-react-dom = { module = "org.jetbrains.kotlin-wrappers:kotlin-react-dom-legacy", version.ref = "kotlin-react" }
+kotlin-styled-next = { module = "org.jetbrains.kotlin-wrappers:kotlin-styled-next", version.ref = "kotlin-styled-next" }
+
+# dokka
+dokka-gradle-plugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka-plugin" }
+
+# aws
+aws-core = { module = "software.amazon.awssdk:sdk-core", version.ref = "aws-sdk" }
+aws-kinesis = { module = "software.amazon.awssdk:kinesis", version.ref = "aws-sdk" }
+aws-kinesis-client = { module = "software.amazon.kinesis:amazon-kinesis-client", version.ref = "aws-kinesis-client" }
+aws-lambda = { module = "software.amazon.awssdk:lambda", version.ref = "aws-sdk" }
+aws-legacy-sdk-core = { module = "com.amazonaws:aws-java-sdk-core", version.ref = "aws-java-sdk" }
+aws-legacy-sdk-sts = { module = "com.amazonaws:aws-java-sdk-sts", version.ref = "aws-java-sdk" }
+aws-netty-client = { module = "software.amazon.awssdk:netty-nio-client", version.ref = "aws-sdk" }
+aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
+aws-sso = { module = "software.amazon.awssdk:sso", version.ref = "aws-sdk" }
+aws-sts = { module = "software.amazon.awssdk:sts", version.ref = "aws-sdk" }
+
+# google cloud
+gcp-bigquery = { module = "com.google.cloud:google-cloud-bigquery", version.ref = "gcp-bigquery-version" }
+gcp-nio = { module = "com.google.cloud:google-cloud-nio", version.ref = "gcp-nio" }
+gcp-storage = { module = "com.google.cloud:google-cloud-storage", version.ref = "gcp-storage-version" }
+
+# grazie
+grazie-model-llm = { module = "ai.grazie.model:model-llm-jvm", version.ref = "grazie-sdk" }
+grazie-gateway-api = { module = "ai.grazie.api:api-gateway-api-jvm", version.ref = "grazie-sdk" }
+grazie-gateway-client = { module = "ai.grazie.api:api-gateway-client-jvm", version.ref = "grazie-sdk" }
+grazie-ktor-client = { module = "ai.grazie.client:client-ktor", version.ref = "grazie-sdk" }
+grazie-ktor-utils = { module = "ai.grazie.utils:utils-ktor", version.ref = "grazie-sdk" }
+grazie-nlp-tokenizer = { module = "ai.grazie.nlp:nlp-tokenizer", version.ref = "grazie-sdk" }
+grazie-utils-common = { module = "ai.grazie.utils:utils-common", version.ref = "grazie-sdk" }
+
+# jackson
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-dataformat-toml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-toml", version.ref = "jackson" }
+jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-datatype-joda = { module = "com.fasterxml.jackson.datatype:jackson-datatype-joda", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-module-json-schema = { module = "com.fasterxml.jackson.module:jackson-module-jsonSchema", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+woodstox-core = { module = "com.fasterxml.woodstox:woodstox-core", version.ref = "woodstox" }
+
+# joda-time
+joda-time = { module = "joda-time:joda-time", version.ref = "joda-time" }
+
+# json
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+json-schema-validator = { module = "com.networknt:json-schema-validator", version.ref = "json-schema-validator" }
+jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonpath" }
+
+# logging
+jul-to-slf4j = { module = "org.slf4j:jul-to-slf4j", version.ref = "slf4j" }
+log4j-to-slf4j = { module = "org.apache.logging.log4j:log4j-to-slf4j", version.ref = "log4j-to-slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-jdk14 = { module = "org.slf4j:slf4j-jdk14", version.ref = "slf4j" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+# elastic
+elasticsearch-client = { module = "co.elastic.clients:elasticsearch-java", version.ref = "elasticsearch-client-version" }
+
+# databases
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-jodatime = { module = "org.jetbrains.exposed:exposed-jodatime", version.ref = "exposed" }
+hikari-pool = { module = "com.zaxxer:HikariCP", version.ref = "hikari-pool" }
+postgresql-driver = { module = "org.postgresql:postgresql", version.ref = "postgresql-driver" }
+
+# android
+android-tools-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-tools-build-gradle" }
+
+# clikt
+clikt-jvm = { module = "com.github.ajalt.clikt:clikt-jvm", version.ref = "clikt" }
+
+# cron-utils
+cron-utils = { module = "com.cronutils:cron-utils", version.ref = "cron-utils" }
+
+# node
+gradle-node-plugin = { module = "com.github.node-gradle:gradle-node-plugin", version.ref = "gradle-node-plugin" }
+
+# docker
+docker-java-core = { module = "com.github.docker-java:docker-java-core", version.ref = "docker-java" }
+docker-java-transport-httpclient5 = { module = "com.github.docker-java:docker-java-transport-httpclient5", version.ref = "docker-java" }
+gradle-docker-compose-plugin = { module = "com.avast.gradle:gradle-docker-compose-plugin", version.ref = "gradle-docker-compose-plugin" }
+
+# http
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+
+# tests
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+assertk-core = { module = "com.willowtreeapps.assertk:assertk", version.ref = "assertk" }
+assertk-jvm = { module = "com.willowtreeapps.assertk:assertk-jvm", version.ref = "assertk" }
+elasticmq-rest-sqs = { module = "org.elasticmq:elasticmq-rest-sqs_2.11", version.ref = "elasticmq-rest-sqs" }
+junit-core = { module = "junit:junit", version.ref = "junit4" }
+junit4-params = { module = "pl.pragmatists:JUnitParams", version.ref = "junit4-params" }
+junit5-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
+junit5-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
+junit5-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+subethasmtp = { module = "org.subethamail:subethasmtp", version.ref = "subethasmtp" }
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+
+# space
+space-sdk-generator = { module = "org.jetbrains:space-sdk-generator", version.ref = "space-sdk-generator" }
+space-twemoji = { module = "org.jetbrains:space-twemoji", version.ref = "space-twemoji" }
+
+# markdown
+jetbrains-markdown = { module = "org.jetbrains:markdown", version.ref = "jetbrains-markdown" }
+
+# html parsing
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+# oshi
+oshi-core = { module = "com.github.oshi:oshi-core", version.ref = "oshi-core" }
+
+# apache
+apache-batik-codec = { module = "org.apache.xmlgraphics:batik-codec", version.ref = "apache-batik" }
+apache-batik-transcoder = { module = "org.apache.xmlgraphics:batik-transcoder", version.ref = "apache-batik" }
+apache-commons-cli = { module = "commons-cli:commons-cli", version.ref = "apache-commons-cli" }
+apache-commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "apache-commons-compress" }
+apache-commons-io = { module = "commons-io:commons-io", version.ref = "apache-commons-io" }
+apache-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "apache-commons-lang3" }
+apache-commons-text = { module = "org.apache.commons:commons-text", version.ref = "apache-commons-text" }
+apache-commons-codec = { module = "commons-codec:commons-codec", version.ref = "apache-commons-codec" }
+apache-sshd-common = { module = "org.apache.sshd:sshd-common", version.ref = "sshd" }
+apache-sshd-contrib = { module = "org.apache.sshd:sshd-contrib", version.ref = "sshd" }
+apache-sshd-core = { module = "org.apache.sshd:sshd-core", version.ref = "sshd" }
+apache-sshd-putty = { module = "org.apache.sshd:sshd-putty", version.ref = "sshd" }
+apache-tika-core = { module = "org.apache.tika:tika-core", version.ref = "apache-tika" }
+apache-tika-parsers = { module = "org.apache.tika:tika-parsers", version.ref = "apache-tika" }
+
+# bouncycastle
+bouncycastle-bcpg-jdk18on = { module = "org.bouncycastle:bcpg-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcpkix-jdk18on = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+bouncycastle-bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+
+# eddsa
+eddsa = { module = "net.i2p.crypto:eddsa", version.ref = "eddsa" }
+
+# packages
+maven-model = { module = "org.apache.maven:maven-model", version.ref = "maven-libs-version" }
+maven-model-builder = { module = "org.apache.maven:maven-model-builder", version.ref = "maven-libs-version" }
+maven-repository-metadata = { module = "org.apache.maven:maven-repository-metadata", version.ref = "maven-libs-version" }
+vdurmont-semver4j = { module = "com.vdurmont:semver4j", version.ref = "vdurmont-semver4j" }
+
+# jwt
+auth0-java-jwt = { module = "com.auth0:java-jwt", version.ref = "auth0" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
+
+# javax
+javax-mail-impl = { module = "com.sun.mail:javax.mail", version.ref = "javax-mail-impl" }
+
+# caffeine
+caffeine-cache = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine-cache-version" }
+
+# bucket4j
+bucket4j-core = { module = "com.bucket4j:bucket4j_jdk11-core", version.ref = "bucket4j" }
+bucket4j-postgresql = { module = "com.bucket4j:bucket4j_jdk11-postgresql", version.ref = "bucket4j" }
+bucket4j-redis = { module = "com.bucket4j:bucket4j_jdk11-redisson", version.ref = "bucket4j" }
+
+# snakeyaml
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
+
+# guava
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+
+# fastutil
+fastutil = { module = "it.unimi.dsi:fastutil", version.ref = "fastutil" }
+
+# redisson
+redisson = { module = "org.redisson:redisson", version.ref = "redisson" }
+
+# slack
+slack-api-model = { module = "com.slack.api:slack-api-model", version.ref = "slack-sdk-version" }
+slack-api-client = { module = "com.slack.api:slack-api-client", version.ref = "slack-sdk-version" }
+
+#
+gradle-license-report = { module = "com.github.jk1:gradle-license-report", version.ref = "gradle-license-report" }
+
+[plugins]
+allure = { id = "io.qameta.allure", version.ref = "allure" }
+binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "binary-compatibility-validator" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin-plugin" }
+download-task = { id = "de.undercouch.download", version.ref = "download-task" }
+sam-with-receiver = { id = "org.jetbrains.kotlin.plugin.sam.with.receiver", version.ref = "kotlin-plugin" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-plugin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
+[bundles]
+jackson = ["jackson-core", "jackson-databind", "jackson-module-kotlin"]

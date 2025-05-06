@@ -1,0 +1,186 @@
+<html>
+<head>
+    <title>Self-Modifying JS Agent</title>
+    <link href="prism.css" rel="stylesheet"/>
+</head>
+<style>
+    * {
+        box-sizing: border-box;
+        transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    html {
+        position: relative;
+
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.8) transparent;
+
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+
+        background-image: linear-gradient(130deg, #5a1fd0 10%, rgba(58, 21, 136, 0.8) 70%);
+
+        font-family: "JetBrains Sans", Inter, system-ui, -apple-system, "system-ui";
+        font-size: 15px;
+        color: white;
+    }
+
+    body {
+        height: 100vh;
+        max-height: 100vh;
+
+        overflow: hidden;
+    }
+
+    .bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        filter: blur(10px);
+    }
+
+    .vertical {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .centered {
+        align-items: center;
+    }
+
+    code {
+        display: block;
+    }
+
+    h1 {
+        font-size: 48px;
+    }
+
+    .program-container {
+        max-width: 80%;
+        width: 100%;
+
+        margin-top: 16px;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .program-header {
+        background-color: rgb(99, 99, 99);
+        color: white;
+        font-size: 13px;
+        font-family: "JetBrains Mono", monospace;
+
+        padding: 4px 16px;
+
+        height: 24px;
+    }
+
+    .agent-pre {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: auto;
+
+        margin: 0 !important;
+
+        padding: 16px;
+    }
+
+    .prompt {
+        background-color: rgb(45, 45, 45);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        max-width: 100%;
+        width: 100%;
+        min-height: 120px;
+        font-size: 15px;
+        resize: none;
+        overflow-y: auto;
+        max-height: 400px;
+
+        padding: 8px 60px 8px 16px;
+
+        color: white;
+    }
+
+    .prompt-container {
+        position: relative;
+        display: flex;
+        flex: 1 1 100%;
+        max-width: 80%;
+        width: 100%;
+        flex-direction: row;
+    }
+
+    .send-button {
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        border: none;
+        color: white;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 400;
+        height: 32px;
+        padding: 6px 8px;
+        background-color: rgb(246, 82, 22);
+    }
+
+    .send-button:hover {
+        background-color: rgb(202, 67, 19);;
+    }
+</style>
+<script>
+    let lastCode = ""
+    setInterval(() => {
+        fetch("/code", {
+            method: "GET"
+        }).then(r => r.text())
+            .then(async (code) => {
+                const codeEl = document.getElementById('code')
+                if (lastCode !== code) {
+                    lastCode = code
+                    codeEl.innerHTML = code
+                    Prism.highlightAll()
+                }
+            })
+    }, 500)
+
+    function sendPrompt() {
+        const prompt = document.getElementById('prompt').value
+        console.log(prompt)
+        fetch("/prompt", {
+            method: "POST",
+            body: prompt
+        })
+    }
+
+</script>
+<body>
+<div class="bg"></div>
+<div class="vertical centered">
+    <h1>Self-modifying JS Agent</h1>
+    <div class="prompt-container">
+        <textarea id="prompt" class="prompt" aria-multiline="true" placeholder="What do you want me to do?">I want you to add information that this repo is created by Vladislav Saifulin</textarea>
+        <button class="send-button" onclick="sendPrompt()">Send</button>
+    </div>
+    <div class="program-container">
+        <div class="program-header">
+            <span>Program</span>
+            <span>Iteration:</span>
+            <span id="iteration-number">0</span>
+            <span>Time elapsed:</span>
+            <span id="time-elapsed"></span>
+        </div>
+        <pre class="agent-pre"><code class="language-javascript" id="code"></code></pre>
+    </div>
+</div>
+<script src="prism.js"></script>
+</body>
+</html>

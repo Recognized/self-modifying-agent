@@ -118,3 +118,4 @@ client-fleet/src/commonMain/generated
 .kotlin
 .emb_storage
 /.idea/inspectionProfiles/Project_Default.xml
+js-env/main.js
