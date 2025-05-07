@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.serialization.jackson)
+    implementation(libs.ktor.server.status.pages)
 
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
@@ -94,6 +95,7 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
 
     implementation(libs.logback.classic)
+    implementation("io.ktor:ktor-server-host-common:3.1.2")
     testImplementation(kotlin("test"))
     api(libs.kotlin.reflect)
     api(libs.slf4j.api)

@@ -2,7 +2,6 @@
 
 package org.jetbrains.sma
 
-import ai.grazie.utils.text
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT
 import io.ktor.client.*
@@ -15,6 +14,7 @@ import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -33,11 +33,40 @@ fun Application.module() {
     configureRouting()
 }
 
+data class ErrorResponse(
+    val status: Int,
+    val error: String,
+    val message: String,
+    val details: String? = null, // Optional field for more details
+    val allowedMethods: List<String>? = null // Specific for 405
+)
+
 fun Application.configureSerialization() {
     install(ContentNegotiation) {
         jackson {
             enable(INDENT_OUTPUT)
             disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        }
+    }
+
+    install(StatusPages) {
+        exception<IllegalArgumentException> { call, cause ->
+            val errorResponse = ErrorResponse(
+                status = HttpStatusCode.BadRequest.value,
+                error = HttpStatusCode.BadRequest.description,
+                message = cause.message ?: "Invalid argument provided."
+            )
+            call.respond(HttpStatusCode.BadRequest, errorResponse)
+        }
+
+        exception<Throwable> { call, cause ->
+            cause.printStackTrace()
+            val errorResponse = ErrorResponse(
+                status = HttpStatusCode.InternalServerError.value,
+                error = HttpStatusCode.InternalServerError.description,
+                message = "An unexpected internal server error occurred. Please try again later."
+            )
+            call.respond(HttpStatusCode.InternalServerError, errorResponse)
         }
     }
 }

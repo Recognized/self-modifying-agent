@@ -15,5 +15,7 @@ val LLM_REQUEST_PROMPT = """
     ${LlmRequest::userMessage.template}
     
     Other args provided with the request:
-    ${LlmRequest::args.template}
+    ${LlmRequest::args.template}.
+    
+    If this request can't be fulfilled by you, call tool `error`. 
 """.trimIndent().asFunction<LlmRequest>()

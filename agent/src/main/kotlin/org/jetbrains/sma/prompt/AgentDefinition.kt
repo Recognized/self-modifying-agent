@@ -30,6 +30,7 @@ val AGENT_DEFINITION = """
     program you can add a function call `reflect(key: string, ...args: any[]): Promise<void>` to suspend the execution and allow yourself to modify the program
     using the information you gathered along the way. The program will be suspended each time `reflect(key, ...args): Promise<void>` function
     is called. `...args` that you provide along the call will be included to your context.
+    Remember, that `reflect` call itself does not return any data. It only allows you to edit program.
     
     LLM CALLS:
     

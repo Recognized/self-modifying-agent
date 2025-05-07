@@ -1,5 +1,6 @@
 package org.jetbrains.sma
 
+import ai.grazie.model.llm.chat.tool.LLMTool
 import ai.grazie.utils.text
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -7,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.sma.LineType.Error
-import org.jetbrains.sma.LineType.Info
 import org.jetbrains.sma.LineType.Trace
 import org.jetbrains.sma.prompt.AGENT_DEFINITION
 import org.jetbrains.sma.prompt.CONTEXT_PROMPT
@@ -158,22 +158,62 @@ class Task : CoroutineScope {
             labelPromptId = "client-request",
             llmProfile = Config.profile,
             acceptMissingParams = true,
-            builder = {},
+            builder = {
+                tools = listOf(
+                    LLMTool(
+                        "error",
+                        "LLM request cannot be correctly answered (e.g. due to missing tools).",
+                        LLMTool.Parameters.fromJsonString("""
+                        {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error message"
+                                }
+                            },
+                            "required": []
+                        }
+                        """.trimIndent())
+                    )
+                )
+            },
             dynamicCachePoint = false
-        ) { response, _ ->
-            Either.Value(response.asText().text())
+        ) { response, callId ->
+            var message: GrazieChatMessageDB? = null
+            val text = response.withAssistantMessageConsumer(callId) {
+                message = it
+            }.asText().text()
+
+            val errorCall =
+                (message as? GrazieChatMessageDB.Assistant)?.calls.orEmpty().find { it.functionName == "error" }
+            if (errorCall != null) {
+                Either.Value(Either.Error(errorCall.content.takeIf { it.isNotBlank() } ?: text))
+            } else {
+                Either.Value(Either.Value(text))
+            }
         }
 
-        if (result != null) {
-            llmCache[request] = result
+        val content = when (result) {
+            is Either.Error -> result.message
+            is Either.Value -> result.value
+            else -> null
+        }
+
+        if (result != null && result is Either.Value) {
+            llmCache[request] = result.value
         }
 
         log.appendLine(
-            "LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
+            "LLM response: \"${content?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
             if (result == null) Error else Trace
         )
 
-        return result ?: "Error: failed to receive response from LLM. Try again."
+        when (result) {
+            is Either.Error -> throw IllegalArgumentException(result.message)
+            is Either.Value -> return result.value
+            else -> throw IllegalArgumentException("Error: failed to receive response from LLM. Try again.")
+        }
     }
 
     suspend fun reflect(reflect: ReflectRequest) {

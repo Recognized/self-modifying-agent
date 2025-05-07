@@ -103,9 +103,9 @@ export async function serverUrl() {
     }
 }
 
-function expectOk(response) {
+async function expectOk(response) {
     if (!response.ok) {
-        throw new Error(`HTTP error! ${JSON.stringify(response)}`)
+        throw new Error(`HTTP error! ${await response.text()}`)
     }
     return response;
 }
