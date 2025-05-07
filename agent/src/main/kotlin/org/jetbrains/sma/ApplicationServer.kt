@@ -162,10 +162,10 @@ fun Application.configureRouting() {
             log.info("Received reflect request: $request")
 
             call.respond(HttpStatusCode.OK)
-            task.reflectCache.add(request)
             task.launch {
                 task.awaitMainLoop()
                 task.reflect(request)
+                task.reflectCache.add(request)
                 task.launchMainLoop()
             }
         }
