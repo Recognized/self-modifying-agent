@@ -79,7 +79,7 @@ class PromptRequest(
     val mounts: List<String>
 )
 
-class LogLine(val id: String, val line: String, val error: Boolean)
+class LogLine(val id: String, val line: String, val type: String)
 
 class TaskStatus(
     val iterationIndex: Int,

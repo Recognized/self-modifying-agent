@@ -6,15 +6,22 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.sma.LineType.Error
+import org.jetbrains.sma.LineType.Info
+import org.jetbrains.sma.LineType.Trace
 import org.jetbrains.sma.prompt.AGENT_DEFINITION
 import org.jetbrains.sma.prompt.CONTEXT_PROMPT
 import org.jetbrains.sma.prompt.ERROR_HANDLER_PROMPT
+import org.jetbrains.sma.prompt.FollowUpRequest
 import org.jetbrains.sma.prompt.HandleErrorRequest
 import org.jetbrains.sma.prompt.INITIAL_GENERATION_PROMPT
 import org.jetbrains.sma.prompt.LLM_REQUEST_PROMPT
 import org.jetbrains.sma.prompt.REFLECT_PROMPT
 import org.jetbrains.sma.prompt.Reflect
+import org.jetbrains.sma.prompt.SUBSEQUENT_GENERATION_PROMPT
 import org.jetbrains.sma.prompt.TaskContext
+import org.jetbrains.sma.prompt.withSuspendMarker
+import org.jetbrains.sma.prompt.withoutSuspendMarker
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.concurrent.thread
@@ -22,14 +29,18 @@ import kotlin.coroutines.CoroutineContext
 
 var task: Task = Task()
 
+enum class LineType {
+    Error, Info, Trace
+}
+
 class LogCollector {
     private val lines = mutableListOf<LogLine>()
     private var id = 0
 
     @Synchronized
-    fun appendLine(line: String, error: Boolean = false) {
+    fun appendLine(line: String, type: LineType = Trace) {
         line.lines().forEach {
-            lines.add(LogLine(id++.toString(), it, error))
+            lines.add(LogLine(id++.toString(), it, type.name))
         }
     }
 
@@ -46,6 +57,14 @@ class Task : CoroutineScope {
 
     val env = Env()
     var prompt: String = ""
+        set(value) {
+            if (value == field) return
+            promptChanged = true
+            llmCache.clear()
+            reflectCache.clear()
+            oldPrompts.add(field)
+            field = value
+        }
     var mounts: List<String> = emptyList()
         set(value) {
             if (value == field) return
@@ -61,13 +80,15 @@ class Task : CoroutineScope {
     var mountsChanged = false
     val llmCache = mutableMapOf<LlmRequest, String>()
     val reflectCache = mutableSetOf<ReflectRequest>()
+    var promptChanged = false
+    var oldPrompts = mutableListOf<String>()
 
     var loopActive = AtomicBoolean(false)
 
     private fun fail(message: String): Nothing {
         failed = true
         log.appendLine(message)
-        log.appendLine("Agent failed too many times in a row. Stopping.", error = true)
+        log.appendLine("Agent failed too many times in a row. Stopping.", Error)
         error("Failed without chance to recover")
     }
 
@@ -80,7 +101,7 @@ class Task : CoroutineScope {
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
                 GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env, null))),
-                GrazieChatMessageDB.User(INITIAL_GENERATION_PROMPT)
+                GrazieChatMessageDB.User(if (promptChanged) SUBSEQUENT_GENERATION_PROMPT(FollowUpRequest(oldPrompts)) else INITIAL_GENERATION_PROMPT)
             ).map { it.loggable() },
             "initial",
             Config.profile,
@@ -91,11 +112,12 @@ class Task : CoroutineScope {
             applyEdits(response.asText().text(), code)
         } ?: fail("Initial code diff generation failed.")
         code = editedCode
+        promptChanged = false
         iterationIndex++
     }
 
     suspend fun handleError(error: String) {
-        log.appendLine("Error detected:\n$error", error = true)
+        log.appendLine("Error detected:\n$error", Error)
         log.appendLine("Attempting to fix... ")
         val editedCode = complete(
             listOf(
@@ -103,7 +125,7 @@ class Task : CoroutineScope {
                 GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env, null))),
                 GrazieChatMessageDB.User(ERROR_HANDLER_PROMPT(HandleErrorRequest(error)))
             ).map { it.loggable() },
-            "reflect",
+            "error",
             Config.profile,
             builder = {},
             acceptMissingParams = false,
@@ -148,7 +170,7 @@ class Task : CoroutineScope {
 
         log.appendLine(
             "LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
-            error = result == null
+            if (result == null) Error else Trace
         )
 
         return result ?: "Error: failed to receive response from LLM. Try again."
@@ -168,7 +190,9 @@ class Task : CoroutineScope {
             acceptMissingParams = false,
             dynamicCachePoint = true
         ) { response, _ ->
-            applyEdits(response.asText().text(), code)
+            applyEdits(response.asText().text(), code.withSuspendMarker(reflect.key)).map {
+                it.withoutSuspendMarker()
+            }
         } ?: fail("Attempt to generate code diff for the next version of the program failed.")
         code = editedCode
         iterationIndex++
@@ -223,7 +247,7 @@ class Task : CoroutineScope {
                     recreateContainer()
                 }
 
-                if (iterationIndex == 0) {
+                if (iterationIndex == 0 || promptChanged) {
                     initialGeneration()
                 }
 

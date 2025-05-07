@@ -194,6 +194,10 @@
         font-weight: bold;
     }
 
+    .trace {
+        opacity: 0.5;
+    }
+
     .left-block {
         flex-grow: 1;
         max-width: 60%;
@@ -210,6 +214,79 @@
 
     .send-button:hover {
         background-color: rgb(202, 67, 19);;
+    }
+
+    .loader {
+        width: 48px;
+        height: 48px;
+        display: inline-block;
+        position: relative;
+        border: 3px solid;
+        border-color: #de3500 #0000 #fff #0000;
+        border-radius: 50%;
+        box-sizing: border-box;
+        animation: 1s rotate linear infinite;
+    }
+
+    .loader:before, .loader:after {
+        content: '';
+        top: 0;
+        left: 0;
+        position: absolute;
+        border: 10px solid transparent;
+        border-bottom-color: #fff;
+        transform: translate(-10px, 19px) rotate(-35deg);
+    }
+
+    .loader:after {
+        border-color: #de3500 #0000 #0000 #0000;
+        transform: translate(32px, 3px) rotate(-35deg);
+    }
+
+    @keyframes rotate {
+        100% {
+            transform: rotate(360deg)
+        }
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    :root {
+        --borderWidth: 7px;
+        --height: 24px;
+        --width: 12px;
+        --borderColor: #ffffff;
+    }
+
+    .check {
+        display: inline-block;
+        transform: rotate(45deg);
+        height: var(--height);
+        width: var(--width);
+        border-bottom: var(--borderWidth) solid var(--borderColor);
+        border-right: var(--borderWidth) solid var(--borderColor);
+    }
+
+    .checkmark {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+
+        gap: 12px;
+        font-size: 24px;
+        background-color: #16ac22;
+        border-radius: 24px;
+        padding: 8px 16px;
+    }
+
+    .gap8 {
+        gap: 8px;
+    }
+
+    .no-shrink {
+        flex-shrink: 0;
     }
 </style>
 <script>
@@ -302,8 +379,10 @@
                             lineElement.classList.add('log-line');
                             lineElement.id = `log-${log.id}`;
 
-                            if (log.error) {
+                            if (log.type === "Error") {
                                 lineElement.classList.add('error');
+                            } else if (log.type === "Trace") {
+                                lineElement.classList.add('trace');
                             }
 
                             console.appendChild(lineElement);
@@ -317,6 +396,23 @@
                         const consoleContainer = document.getElementById('console-container')
                         consoleContainer.scrollTop = consoleContainer.scrollHeight;
                     }
+                }
+
+                const loaderEl = document.getElementById('loader')
+                const completedEl = document.getElementById('checkmark')
+                const completed = lastStatus && lastStatus.completed && lastStatus.iterationIndex > 0
+                const loading = lastStatus && !lastStatus.completed && lastStatus.iterationIndex > 0
+
+                if (completed && completedEl.classList.contains('hidden')) {
+                    completedEl.classList.remove('hidden')
+                } else if (!completed && !completedEl.classList.contains('hidden')) {
+                    completedEl.classList.add('hidden')
+                }
+
+                if (loading && loaderEl.classList.contains('hidden')) {
+                    loaderEl.classList.remove('hidden')
+                } else if (!loading && !loaderEl.classList.contains('hidden')) {
+                    loaderEl.classList.add('hidden')
                 }
 
                 lastStatus = status
@@ -346,11 +442,19 @@
         })
     }
 
+
 </script>
 <body class="v-shrink">
 <div class="bg"></div>
 <div class="vertical centered v-shrink">
-    <h1>Self-modifying JS Agent</h1>
+    <div class="horizontal gap16 grow no-shrink centered">
+        <h1>Self-modifying JS Agent</h1>
+        <span class="loader hidden" id="loader"></span>
+        <div class="checkmark hidden" id="checkmark">
+            <div class="check"></div>
+            <div>Task completed</div>
+        </div>
+    </div>
     <div class="horizontal gap16 grow v-shrink">
         <div class="vertical centered grow left-block gap16 v-shrink">
             <div class="prompt-container">

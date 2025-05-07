@@ -16,8 +16,14 @@ fun String.withSuspendMarker(key: String): String {
     return lines().map {
         if (it.contains("\"$key\"")) {
             "$it $EXECUTION_SUSPENDED_MARKER"
+        } else {
+            it
         }
     }.joinToString("\n")
+}
+
+fun String.withoutSuspendMarker(): String {
+    return replace(" $EXECUTION_SUSPENDED_MARKER", "")
 }
 
 class TaskContext(

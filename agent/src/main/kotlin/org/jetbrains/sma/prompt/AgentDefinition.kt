@@ -20,6 +20,7 @@ val AGENT_DEFINITION = """
     at the code line that raised the error. After you provide updates to the program, execution will be resumed
     from the same place with the same program state.
     Note, that the program is written in JavaScript and not TypeScript, so don't specify types.
+    When you print something to console, it will be shown to user. So this is your way of communicating with user.
     
     SELF-REFLECTION:
     
@@ -68,5 +69,11 @@ val AGENT_DEFINITION = """
       - Value of any variables provided to function that initiated this request to you (in <variables> block)
       - Environment variables such as current working directory (in <env> block)
       - Error/exception that caused this request if any (in <error> block)
+      
+    IMPORTS:
+        These are the imports of some your tools available for coding:
+        ```
+        import {llm, reflect} from "./lib.js";
+        ```
 """.trimIndent()
 

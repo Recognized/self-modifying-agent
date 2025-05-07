@@ -1,6 +1,8 @@
 package org.jetbrains.sma
 
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.sma.LineType.Error
+import org.jetbrains.sma.LineType.Info
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.locks.ReentrantLock
@@ -49,7 +51,7 @@ class Runner {
                     process.inputStream.bufferedReader().use { reader ->
                         while (true) {
                             val line = reader.readLine() ?: break
-                            log.appendLine("[js-env]: $line")
+                            log.appendLine("[js-env]: $line", Info)
                         }
                     }
                 }
@@ -61,7 +63,7 @@ class Runner {
                     process.errorStream.bufferedReader().use { reader ->
                         while (true) {
                             val line = reader.readLine() ?: break
-                            log.appendLine("[js-env]: $line", error = true)
+                            log.appendLine("[js-env]: $line", Error)
                             lock.withLock {
                                 errorLines.appendLine(line)
                             }
@@ -75,10 +77,10 @@ class Runner {
                 if (exitCode == 0) {
                     cont.resumeWith(Result.success(Unit))
                 } else if (timeout) {
-                    log.appendLine("Program execution timed out (1 minute timeout)", error = true)
+                    log.appendLine("Program execution timed out (1 minute timeout)", Error)
                     cont.resumeWith(Result.failure(GenerationError("Program failed to finish in under 1 minute")))
                 } else {
-                    log.appendLine("Program execution finished with exit code $exitCode", error = true)
+                    log.appendLine("Program execution finished with exit code $exitCode", Error)
                     val errorFile = lock.withLock { errorLines.toString() }
                     cont.resumeWith(Result.failure(GenerationError(errorFile)))
                 }
