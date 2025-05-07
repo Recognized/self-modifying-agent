@@ -5,7 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonArray
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.jetbrains.sma.prompt.AGENT_DEFINITION
 import org.jetbrains.sma.prompt.CONTEXT_PROMPT
 import org.jetbrains.sma.prompt.ERROR_HANDLER_PROMPT
@@ -14,7 +14,9 @@ import org.jetbrains.sma.prompt.INITIAL_GENERATION_PROMPT
 import org.jetbrains.sma.prompt.REFLECT_PROMPT
 import org.jetbrains.sma.prompt.Reflect
 import org.jetbrains.sma.prompt.TaskContext
+import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 
 var task: Task = Task()
@@ -41,12 +43,21 @@ class Task : CoroutineScope {
 
     val env = Env()
     var prompt: String = ""
+    var mounts: List<String> = emptyList()
+        set(value) {
+            if (value == field) return
+            mountsChanged = true
+            field = value
+        }
     var iterationIndex = 0
     var code = templateJs
     var completed = true
     var startedAt = 0L
     var log = LogCollector()
     var failed = false
+    var mountsChanged = false
+    val llmCache = mutableMapOf<LlmRequest, String>()
+    val reflectCache = mutableSetOf<ReflectRequest>()
 
     var loopActive = AtomicBoolean(false)
 
@@ -127,6 +138,38 @@ class Task : CoroutineScope {
         }
     }
 
+    private fun shouldRecreateContainer(): Boolean {
+        return iterationIndex == 0 || mountsChanged
+    }
+
+    private suspend fun recreateContainer() {
+        suspendCancellableCoroutine<Unit> { cont ->
+            thread {
+                try {
+                    task.log.appendLine("Recreating node docker container...")
+                    val process = ProcessBuilder("sh", "./run-docker.sh")
+                        .directory(projectDir.parent.toFile())
+                        .inheritIO()
+                        .start()
+                    val timeout = !process.waitFor(1, MINUTES)
+                    if (timeout) {
+                        cont.resumeWith(Result.failure(Exception("Failed to recreate container. Timeout")))
+                        return@thread
+                    }
+                    val exitCode = process.exitValue()
+                    if (exitCode != 0) {
+                        cont.resumeWith(Result.failure(Exception("Failed to recreate container. Exit code: $exitCode")))
+                    } else {
+                        cont.resumeWith(Result.success(Unit))
+                    }
+                } catch (ex: Throwable) {
+                    cont.resumeWith(Result.failure(ex))
+                }
+            }
+        }
+        task.log.appendLine("Docker container successfully recreated")
+    }
+
     fun launchMainLoop() {
         launch {
             loopActive.set(true)
@@ -134,7 +177,13 @@ class Task : CoroutineScope {
                 val totalAttempts = 5
                 var fixErrorAttempts = totalAttempts
 
-                initialGeneration()
+                if (shouldRecreateContainer()) {
+                    recreateContainer()
+                }
+
+                if (iterationIndex == 0) {
+                    initialGeneration()
+                }
 
                 while (true) {
                     try {

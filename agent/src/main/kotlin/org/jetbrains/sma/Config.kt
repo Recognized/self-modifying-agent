@@ -8,5 +8,5 @@ object Config {
         AuthType.entries.firstOrNull { it.name.lowercase() == authType.lowercase() }
     } ?: AuthType.Service
     val grazieUrl = "https://api.app.stgn.grazie.aws.intellij.net"
-    val profile = "google-chat-gemini-flash-2.0"
+    val profile = "google-chat-gemini-flash-2.5"
 }

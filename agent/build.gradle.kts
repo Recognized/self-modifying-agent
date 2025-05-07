@@ -89,6 +89,7 @@ dependencies {
     api(libs.grazie.gateway.client) {
         exclude(group = "io.ktor")
     }
+    implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
 

@@ -21,7 +21,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonArray
+import org.apache.commons.lang3.SystemUtils
 
 fun startServer() {
     embeddedServer(CIO, port = 2205, host = "0.0.0.0", module = Application::module)
@@ -42,13 +42,14 @@ fun Application.configureSerialization() {
     }
 }
 
-class LlmRequest(
+data class LlmRequest(
+    val key: String,
     val systemMessage: String,
     val userMessage: String,
     val args: String,
 )
 
-class ReflectRequest(
+data class ReflectRequest(
     val key: String,
     val args: String,
 )
@@ -72,6 +73,11 @@ suspend fun awaitServer(maxRetries: Int = 30, delayMillis: Long = 1000L): Boolea
 
     return false
 }
+
+class PromptRequest(
+    val prompt: String,
+    val mounts: List<String>
+)
 
 class LogLine(val id: String, val line: String, val error: Boolean)
 
@@ -102,22 +108,41 @@ fun Application.configureRouting() {
         }
 
         post("/prompt") {
-            val prompt = call.receive<String>()
+            val promptRequest = call.receive<PromptRequest>()
             task.awaitMainLoop()
-            task.prompt = prompt
+            task.prompt = promptRequest.prompt
+            task.mounts = promptRequest.mounts
             task.launchMainLoop()
             call.respond(HttpStatusCode.OK)
         }
 
+        post("/should-reflect") {
+            val request = call.receive<ReflectRequest>()
+
+            log.info("Should reflect request: $request ${!task.reflectCache.contains(request)}")
+
+            if (task.reflectCache.contains(request)) {
+                call.respond("false")
+            } else {
+                call.respond("true")
+            }
+        }
+
         post("/reflect") {
             val request = call.receive<ReflectRequest>()
-            call.respond(HttpStatusCode.OK)
+            log.info("Received reflect request: $request")
 
+            call.respond(HttpStatusCode.OK)
+            task.reflectCache.add(request)
             task.launch {
                 task.awaitMainLoop()
                 task.reflect(request)
                 task.launchMainLoop()
             }
+        }
+
+        get("/host-network-mode") {
+            call.respond(if (SystemUtils.IS_OS_LINUX) "true" else "false")
         }
 
         post("/error") {
@@ -140,12 +165,23 @@ fun Application.configureRouting() {
         post("/llm") {
             log.info("Received LLM request")
             val request = call.receive<LlmRequest>()
+            val cached = task.llmCache[request]
+
+            if (cached != null) {
+                call.respond(cached)
+                return@post
+            }
+
             val chat = listOf(
                 GrazieChatMessageDB.System(request.systemMessage).loggable(),
                 GrazieChatMessageDB.User(request.userMessage).loggable(),
             ) + GrazieChatMessageDB.User(request.args).loggable()
 
-            task.log.appendLine("Executing LLM request: \"${chat.joinToString("\n") { it.grazieChatMessageDB.text() }.ellipsize(100)}\"")
+            task.log.appendLine(
+                "Executing LLM request: \"${
+                    chat.joinToString("\n") { it.grazieChatMessageDB.text() }.ellipsize(100)
+                }\""
+            )
 
             val result = complete(
                 chat = chat,
@@ -160,7 +196,14 @@ fun Application.configureRouting() {
                 Either.Value(response.asText().text())
             }
 
-            task.log.appendLine("LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"", error = result == null)
+            if (result != null) {
+                task.llmCache[request] = result
+            }
+
+            task.log.appendLine(
+                "LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
+                error = result == null
+            )
             log.info("LLM request response: $result")
             call.respond(result ?: "Error: failed to receive response from LLM. Try again.")
         }

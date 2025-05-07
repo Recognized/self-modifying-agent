@@ -336,7 +336,13 @@
         console.log(prompt)
         fetch("/prompt", {
             method: "POST",
-            body: prompt
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                mounts: []
+            })
         })
     }
 
