@@ -11,6 +11,7 @@ import org.jetbrains.sma.prompt.CONTEXT_PROMPT
 import org.jetbrains.sma.prompt.ERROR_HANDLER_PROMPT
 import org.jetbrains.sma.prompt.HandleErrorRequest
 import org.jetbrains.sma.prompt.INITIAL_GENERATION_PROMPT
+import org.jetbrains.sma.prompt.LLM_REQUEST_PROMPT
 import org.jetbrains.sma.prompt.REFLECT_PROMPT
 import org.jetbrains.sma.prompt.Reflect
 import org.jetbrains.sma.prompt.TaskContext
@@ -37,6 +38,8 @@ class LogCollector {
         return lines.toList()
     }
 }
+
+private val logger = logger(Task::class)
 
 class Task : CoroutineScope {
     override val coroutineContext: CoroutineContext get() = Dispatchers.IO
@@ -76,7 +79,7 @@ class Task : CoroutineScope {
         val editedCode = complete(
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
-                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env))),
+                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env, null))),
                 GrazieChatMessageDB.User(INITIAL_GENERATION_PROMPT)
             ).map { it.loggable() },
             "initial",
@@ -97,7 +100,7 @@ class Task : CoroutineScope {
         val editedCode = complete(
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
-                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env))),
+                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env, null))),
                 GrazieChatMessageDB.User(ERROR_HANDLER_PROMPT(HandleErrorRequest(error)))
             ).map { it.loggable() },
             "reflect",
@@ -112,12 +115,51 @@ class Task : CoroutineScope {
         iterationIndex++
     }
 
+    suspend fun llm(request: LlmRequest): String {
+        val chat = listOf(
+            GrazieChatMessageDB.System(AGENT_DEFINITION).loggable(),
+            GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, request.args, env, request.key)))
+                .loggable(),
+            GrazieChatMessageDB.User(LLM_REQUEST_PROMPT(request)).loggable()
+        )
+
+        task.log.appendLine(
+            "Executing LLM request: \"${
+                chat.joinToString("\n") { it.grazieChatMessageDB.text() }.ellipsize(100)
+            }\""
+        )
+
+        logger.info { "Executing LLM request:\n${chat.joinToString("\n") { it.grazieChatMessageDB.text() }}" }
+
+        val result = complete(
+            chat = chat,
+            labelPromptId = "client-request",
+            llmProfile = Config.profile,
+            acceptMissingParams = true,
+            builder = {},
+            dynamicCachePoint = false
+        ) { response, _ ->
+            Either.Value(response.asText().text())
+        }
+
+        if (result != null) {
+            llmCache[request] = result
+        }
+
+        log.appendLine(
+            "LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
+            error = result == null
+        )
+
+        return result ?: "Error: failed to receive response from LLM. Try again."
+    }
+
     suspend fun reflect(reflect: ReflectRequest) {
         log.appendLine("Stopped at `reflect(${reflect.key}...)` call. Generating next version of the program.")
         val editedCode = complete(
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
-                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, reflect.args, env))),
+                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, reflect.args, env, reflect.key))),
                 GrazieChatMessageDB.User(REFLECT_PROMPT(Reflect(reflect.key)))
             ).map { it.loggable() },
             "reflect",

@@ -68,71 +68,87 @@ suspend fun <T> complete(
 ): T? {
     var attempts = 5
 
+    var lastResult: Either<T>? = null
     var response: LoggableLLMChatMessage? = null
     var error: LoggableLLMChatMessage? = null
 
-    do {
-        --attempts
+    try {
+        do {
+            --attempts
 
-        if (dynamicCachePoint) {
-            readjustCachePointIfNeeded(chat)
-        }
+            if (dynamicCachePoint) {
+                readjustCachePointIfNeeded(chat)
+            }
 
-        val callId = callIdSequence.fetchAndIncrement().toString()
+            val callId = callIdSequence.fetchAndIncrement().toString()
 
-        var responseMessage: GrazieChatMessageDB? = null
-        val profile = profiles().find { it.id.id == llmProfile }
+            var responseMessage: GrazieChatMessageDB? = null
+            val profile = profiles().find { it.id.id == llmProfile }
 
-        val formattedMessages = chat.map { it.formatted(acceptMissingParams) }
-        var credit: Credit? = null
-        val myBuilder: ChatRequestBuilder.() -> Unit = {
-            this.profile = LLMProfileID(llmProfile)
-            this.prompt = LLMPromptID(labelPromptId)
-            this.messages {
-                formattedMessages.forEach {
-                    messages(it.llmChatMessages)
-                    if (it.cachePoint && hasCacheSupport(profile)) {
-                        addCachePoint()
+            val formattedMessages = chat.map { it.formatted(acceptMissingParams) }
+            var credit: Credit? = null
+            val myBuilder: ChatRequestBuilder.() -> Unit = {
+                this.profile = LLMProfileID(llmProfile)
+                this.prompt = LLMPromptID(labelPromptId)
+                this.messages {
+                    formattedMessages.forEach {
+                        messages(it.llmChatMessages)
+                        if (it.cachePoint && hasCacheSupport(profile)) {
+                            addCachePoint()
+                        }
+                    }
+
+                    if (response != null) {
+                        messages(response!!.llmChatMessages)
+                    }
+
+                    if (error != null) {
+                        messages(error!!.llmChatMessages)
                     }
                 }
 
-                if (response != null) {
-                    messages(response!!.llmChatMessages)
-                }
-
-                if (error != null) {
-                    messages(error!!.llmChatMessages)
-                }
+                builder()
             }
 
-            builder()
-        }
+            try {
+                val flow = client.llm().v8().withDefaultRetry { chat(myBuilder) }
+                    .withAssistantMessageConsumer(callId) { responseMessage = it }
+                    .withCreditConsumer { credit = it }
+                val result = consume(flow, callId)
+                lastResult = result
+                when (result) {
+                    is Error -> {
+                        response = responseMessage?.loggable()
+                        error = User("Error: ${result.message}").loggable()
+                    }
 
-        try {
-            val flow = client.llm().v8().withDefaultRetry { chat(myBuilder) }
-                .withAssistantMessageConsumer(callId) { responseMessage = it }
-                .withCreditConsumer { credit = it }
-
-            when (val result = consume(flow, callId)) {
-                is Error -> {
-                    response = responseMessage?.loggable()
-                    error = User("Error: ${result.message}").loggable()
+                    is Value -> {
+                        return result.value
+                    }
                 }
-
-                is Value -> {
-                    return result.value
-                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ContinuousSSEException) {
+                throw e
+            } catch (e: HttpExceptionBase) {
+                throw e
+            } catch (e: Exception) {
+                throw e
             }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: ContinuousSSEException) {
-            throw e
-        } catch (e: HttpExceptionBase) {
-            throw e
-        } catch (e: Exception) {
-            throw e
+        } while (attempts > 0)
+    } finally {
+        if (lastResult is Error) {
+            log.info {
+                """
+                Chat: ${chat.joinToString("\n") { it.grazieChatMessageDB.text() }}
+                
+                Last response: ${response?.grazieChatMessageDB?.text()}
+                
+                Result: ${lastResult.message}
+            """.trimIndent()
+            }
         }
-    } while (attempts > 0)
+    }
 
     return null
 }
@@ -400,8 +416,8 @@ sealed class Either<out ValueType> {
         }
     }
 
-    class Value<ValueType>(val value: ValueType) : Either<ValueType>()
-    class Error<ValueType>(val message: String) : Either<ValueType>()
+    data class Value<ValueType>(val value: ValueType) : Either<ValueType>()
+    data class Error<ValueType>(val message: String) : Either<ValueType>()
 }
 
 private fun <TBuilder, TReplacement> formatTemplate(

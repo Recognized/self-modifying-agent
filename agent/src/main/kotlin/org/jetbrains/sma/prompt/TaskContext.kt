@@ -1,6 +1,5 @@
 package org.jetbrains.sma.prompt
 
-import kotlinx.serialization.json.JsonArray
 import org.jetbrains.sma.Env
 import org.jetbrains.sma.asFunction
 import org.jetbrains.sma.template
@@ -13,12 +12,23 @@ class Variables(val vars: Map<String, Any?> = emptyMap()) {
     }
 }
 
+fun String.withSuspendMarker(key: String): String {
+    return lines().map {
+        if (it.contains("\"$key\"")) {
+            "$it $EXECUTION_SUSPENDED_MARKER"
+        }
+    }.joinToString("\n")
+}
+
 class TaskContext(
     val originalPrompt: String,
-    val code: String,
+    code: String,
     val args: String,
-    val env: Env
-)
+    val env: Env,
+    suspensionKey: String?
+) {
+    val code = suspensionKey?.let { code.withSuspendMarker(it) } ?: code
+}
 
 val CONTEXT_PROMPT = """
     The original user prompt is:
@@ -40,4 +50,5 @@ val CONTEXT_PROMPT = """
     <vars>
     ${TaskContext::args.template}
     </vars>
-""".trimIndent().asFunction<TaskContext>()
+""".trimIndent()
+    .asFunction<TaskContext>()

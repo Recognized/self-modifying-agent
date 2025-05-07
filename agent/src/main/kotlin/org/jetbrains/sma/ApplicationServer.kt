@@ -172,40 +172,9 @@ fun Application.configureRouting() {
                 return@post
             }
 
-            val chat = listOf(
-                GrazieChatMessageDB.System(request.systemMessage).loggable(),
-                GrazieChatMessageDB.User(request.userMessage).loggable(),
-            ) + GrazieChatMessageDB.User(request.args).loggable()
-
-            task.log.appendLine(
-                "Executing LLM request: \"${
-                    chat.joinToString("\n") { it.grazieChatMessageDB.text() }.ellipsize(100)
-                }\""
-            )
-
-            val result = complete(
-                chat = chat,
-                labelPromptId = "client-request",
-                llmProfile = Config.profile,
-                acceptMissingParams = true,
-                builder = {
-
-                },
-                dynamicCachePoint = false
-            ) { response, _ ->
-                Either.Value(response.asText().text())
-            }
-
-            if (result != null) {
-                task.llmCache[request] = result
-            }
-
-            task.log.appendLine(
-                "LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"",
-                error = result == null
-            )
+            val result = task.llm(request)
             log.info("LLM request response: $result")
-            call.respond(result ?: "Error: failed to receive response from LLM. Try again.")
+            call.respond(result)
         }
     }
 }
