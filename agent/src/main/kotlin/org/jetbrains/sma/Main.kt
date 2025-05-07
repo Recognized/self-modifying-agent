@@ -6,6 +6,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(DelicateCoroutinesApi::class)
 fun main() {
+    ProcessBuilder(
+        "docker", "run",
+        "--name", "self-modifying-agent-nodejs",
+        "--network", "host",
+    )
+
     GlobalScope.launch {
         awaitServer()
 

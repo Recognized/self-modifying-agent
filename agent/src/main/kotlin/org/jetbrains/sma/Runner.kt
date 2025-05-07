@@ -1,6 +1,7 @@
 package org.jetbrains.sma
 
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.nio.file.Files
 import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
@@ -9,14 +10,36 @@ import kotlin.io.path.bufferedWriter
 
 class Runner {
     suspend fun run(code: String, log: LogCollector) {
-        jsEnvDir.resolve("main.js").bufferedWriter().use {
-            it.write(code)
-        }
-
         suspendCancellableCoroutine { cont ->
             thread {
+                val tempMain = Files.createTempFile("", "main.js")
+                tempMain.bufferedWriter().use {
+                    it.write(code)
+                }
+
+                ProcessBuilder(
+                    "docker",
+                    "cp",
+                    "${jsEnvDir.toAbsolutePath().toString().removeSuffix("/")}/.",
+                    "self-modifying-agent-nodejs:/usr/src/js-env"
+                ).start().waitFor()
+                ProcessBuilder(
+                    "docker",
+                    "cp",
+                    "${tempMain.toAbsolutePath()}",
+                    "self-modifying-agent-nodejs:/usr/src/js-env/main.js"
+                ).start().waitFor()
+
                 log.appendLine("Starting program execution...")
-                val process = ProcessBuilder("npm", "run", "run")
+                val process = ProcessBuilder(
+                    "docker",
+                    "exec",
+                    "-w",
+                    "/usr/src/js-env",
+                    "self-modifying-agent-nodejs",
+                    "node",
+                    "agent.js"
+                )
                     .directory(jsEnvDir.toFile())
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .redirectError(ProcessBuilder.Redirect.PIPE)

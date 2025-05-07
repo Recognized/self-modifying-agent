@@ -65,7 +65,7 @@ class Task : CoroutineScope {
         val editedCode = complete(
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
-                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, JsonArray(emptyList()), env))),
+                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env))),
                 GrazieChatMessageDB.User(INITIAL_GENERATION_PROMPT)
             ).map { it.loggable() },
             "initial",
@@ -86,7 +86,7 @@ class Task : CoroutineScope {
         val editedCode = complete(
             listOf(
                 GrazieChatMessageDB.System(AGENT_DEFINITION),
-                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, JsonArray(emptyList()), env))),
+                GrazieChatMessageDB.User(CONTEXT_PROMPT(TaskContext(prompt, code, "", env))),
                 GrazieChatMessageDB.User(ERROR_HANDLER_PROMPT(HandleErrorRequest(error)))
             ).map { it.loggable() },
             "reflect",

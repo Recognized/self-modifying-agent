@@ -3,6 +3,7 @@
 package org.jetbrains.sma
 
 import ai.grazie.utils.text
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -36,6 +37,7 @@ fun Application.configureSerialization() {
     install(ContentNegotiation) {
         jackson {
             enable(INDENT_OUTPUT)
+            disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         }
     }
 }
@@ -43,12 +45,12 @@ fun Application.configureSerialization() {
 class LlmRequest(
     val systemMessage: String,
     val userMessage: String,
-    val args: JsonArray,
+    val args: String,
 )
 
 class ReflectRequest(
     val key: String,
-    val args: JsonArray,
+    val args: String,
 )
 
 suspend fun awaitServer(maxRetries: Int = 30, delayMillis: Long = 1000L): Boolean {
@@ -84,7 +86,7 @@ class TaskStatus(
 
 fun Application.configureRouting() {
     routing {
-        staticFiles("", jsEnvDir.resolve("static").toFile())
+        staticFiles("", projectDir.resolve("static").toFile())
 
         get("/status") {
             call.respond(
@@ -111,7 +113,7 @@ fun Application.configureRouting() {
             val request = call.receive<ReflectRequest>()
             call.respond(HttpStatusCode.OK)
 
-            launch {
+            task.launch {
                 task.awaitMainLoop()
                 task.reflect(request)
                 task.launchMainLoop()
@@ -122,7 +124,7 @@ fun Application.configureRouting() {
             val error = call.receive<String>()
             call.respond(HttpStatusCode.OK)
 
-            launch {
+            task.launch {
                 task.awaitMainLoop()
                 task.handleError(error)
                 task.launchMainLoop()
@@ -131,17 +133,22 @@ fun Application.configureRouting() {
 
         post("/task-completed") {
             task.completed = true
+            task.log.appendLine("Task completed.")
             call.respond(HttpStatusCode.OK)
         }
 
         post("/llm") {
+            log.info("Received LLM request")
             val request = call.receive<LlmRequest>()
+            val chat = listOf(
+                GrazieChatMessageDB.System(request.systemMessage).loggable(),
+                GrazieChatMessageDB.User(request.userMessage).loggable(),
+            ) + GrazieChatMessageDB.User(request.args).loggable()
+
+            task.log.appendLine("Executing LLM request: \"${chat.joinToString("\n") { it.grazieChatMessageDB.text() }.ellipsize(100)}\"")
 
             val result = complete(
-                chat = listOf(
-                    GrazieChatMessageDB.System(request.systemMessage).loggable(),
-                    GrazieChatMessageDB.User(request.userMessage).loggable(),
-                ) + GrazieChatMessageDB.User(print(request.args)).loggable(),
+                chat = chat,
                 labelPromptId = "client-request",
                 llmProfile = Config.profile,
                 acceptMissingParams = true,
@@ -153,7 +160,17 @@ fun Application.configureRouting() {
                 Either.Value(response.asText().text())
             }
 
+            task.log.appendLine("LLM response: \"${result?.ellipsize(100) ?: "Error: failed to receive response from LLM. Try again."}\"", error = result == null)
+            log.info("LLM request response: $result")
             call.respond(result ?: "Error: failed to receive response from LLM. Try again.")
         }
+    }
+}
+
+fun String.ellipsize(take: Int): String {
+    return if (length > take) {
+        take(take) + "..."
+    } else {
+        this
     }
 }

@@ -79,6 +79,13 @@
         overflow: hidden;
         border-radius: 16px;
         border: 1px solid rgba(255, 255, 255, 0.1);
+
+        transition: transform 0.2s ease-in-out;
+        transform: scale(1);
+    }
+
+    .program-container.active {
+        transform: scale(1.03);
     }
 
     .program-header {
@@ -102,39 +109,6 @@
         margin: 0 !important;
 
         padding: 16px;
-    }
-
-    .flare-effect {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 20px; /* Start small */
-        height: 20px; /* Start small */
-        background: radial-gradient(circle,
-        rgba(255, 255, 220, 0.9) 0%,
-        rgba(255, 255, 180, 0.7) 30%,
-        rgba(255, 220, 100, 0.3) 70%,
-        rgba(255, 200, 50, 0) 100%);
-        border-radius: 50%;
-        transform: translate(-50%, -50%) scale(0); /* Center and start scaled down */
-        opacity: 0;
-        pointer-events: none; /* Don't block clicks */
-        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
-        opacity 0.4s ease-out;
-    }
-
-    .flare-effect.visible {
-        transform: translate(-50%, -50%) scale(15); /* Scale up to cover (adjust as needed) */
-        opacity: 1;
-        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1),
-        opacity 0.3s ease-in;
-    }
-
-    /* For fading out */
-    .flare-effect.hiding {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(16); /* Optional: slightly larger on fade out */
-        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
     }
 
     .console-pre {
@@ -239,62 +213,6 @@
     }
 </style>
 <script>
-    /**
-     * Shows a flare effect over a target element, executes a callback
-     * to change content, then fades the flare out.
-     * @param {HTMLElement} targetElement - The element to show the flare over.
-     * @param {Function} contentChangeCallback - Function to execute to change content.
-     * @param {Object} [options] - Optional parameters.
-     * @param {number} [options.flareInDuration=500] - Duration of flare-in animation in ms.
-     * @param {number} [options.flareOutDuration=400] - Duration of flare-out animation in ms.
-     */
-    function showFlareEffect(targetElement, contentChangeCallback, options = {}) {
-        if (!targetElement || typeof contentChangeCallback !== 'function') {
-            console.error("Target element or callback missing.");
-            if (typeof contentChangeCallback === 'function') contentChangeCallback(); // Still run callback
-            return;
-        }
-
-        const flareInDuration = options.flareInDuration || 500;
-        const flareOutDuration = options.flareOutDuration || 400;
-
-        // 1. Ensure target has position: relative
-        const originalPosition = getComputedStyle(targetElement).position;
-        if (originalPosition === 'static') {
-            targetElement.style.position = 'relative';
-        }
-
-        // 2. Create and append flare
-        const flare = document.createElement('div');
-        flare.className = 'flare-effect';
-        targetElement.appendChild(flare);
-
-        // 3. Trigger "in" animation (force reflow before adding .visible class)
-        // Reading a property like offsetHeight forces a reflow
-        void flare.offsetHeight; // Or requestAnimationFrame(() => flare.classList.add('visible'));
-        flare.classList.add('visible');
-
-        // 4. Wait for "in" animation to complete
-        setTimeout(() => {
-            // 5. Execute content change
-            contentChangeCallback();
-
-            // 6. Trigger "out" animation
-            flare.classList.remove('visible'); // Remove 'visible'
-            flare.classList.add('hiding');     // Add 'hiding' for distinct out transition
-
-            // 7. Wait for "out" animation to complete then remove flare
-            setTimeout(() => {
-                flare.remove();
-                // Restore original position if we changed it
-                if (originalPosition === 'static') {
-                    targetElement.style.position = originalPosition;
-                }
-            }, flareOutDuration);
-
-        }, flareInDuration);
-    }
-
     function formatDuration(ms) {
         if (ms < 0) ms = 0; // Treat negative durations as 0
 
@@ -343,10 +261,12 @@
                     const code = status.code
                     const codeEl = document.getElementById('code')
                     if (!lastStatus || lastStatus.code !== code) {
-                        showFlareEffect(codeEl, () => {
-                            codeEl.innerHTML = code
-                            Prism.highlightAll()
-                        })
+                        codeEl.innerHTML = code
+                        document.getElementById('code-container').classList.add('active')
+                        setTimeout(() => {
+                            document.getElementById('code-container').classList.remove('active')
+                        }, 300)
+                        Prism.highlightAll()
                     }
                 }
 
@@ -363,6 +283,7 @@
                         newLogLineIds.add(log.id)
                     }
                     const oldLogLineIds = new Set()
+                    let added = false
 
                     if (lastStatus) {
                         for (const prevLog of lastStatus.log) {
@@ -387,7 +308,14 @@
 
                             console.appendChild(lineElement);
                             console.appendChild(document.createTextNode('\n'));
+
+                            added = true
                         }
+                    }
+
+                    if (added) {
+                        const consoleContainer = document.getElementById('console-container')
+                        consoleContainer.scrollTop = consoleContainer.scrollHeight;
                     }
                 }
 
@@ -423,7 +351,7 @@
                 <textarea id="prompt" class="prompt" aria-multiline="true" placeholder="What do you want me to do?">I want you to add information that this repo is created by Vladislav Saifulin</textarea>
                 <button class="send-button" onclick="sendPrompt()">Send</button>
             </div>
-            <div class="program-container v-shrink">
+            <div class="program-container v-shrink" id="code-container">
                 <div class="program-header">
                     <span>Program</span>
                     <span>Iteration:</span>
@@ -439,7 +367,7 @@
                 <div class="program-header">
                     <span>Console log</span>
                 </div>
-                <pre class="console-pre"><code id="console"></code></pre>
+                <pre class="console-pre" id="console-container"><code id="console"></code></pre>
             </div>
         </div>
     </div>

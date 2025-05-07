@@ -16,7 +16,7 @@ class Variables(val vars: Map<String, Any?> = emptyMap()) {
 class TaskContext(
     val originalPrompt: String,
     val code: String,
-    val args: JsonArray,
+    val args: String,
     val env: Env
 )
 

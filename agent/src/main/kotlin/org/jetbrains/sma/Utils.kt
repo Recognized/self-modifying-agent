@@ -64,4 +64,4 @@ val KCallable<*>.template get() = "{${name}}"
 
 val projectDir: Path = log.catchAndFail { Paths.get(System.getProperty("projectDir")!!) }
 val jsEnvDir: Path = log.catchAndFail { projectDir.parent.resolve("js-env") }
-val templateJs = log.catchAndFail { jsEnvDir.resolve("template.js").toFile().bufferedReader().readText() }
+val templateJs = log.catchAndFail { projectDir.resolve("template.js").toFile().bufferedReader().readText() }

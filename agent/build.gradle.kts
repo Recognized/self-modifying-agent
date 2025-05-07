@@ -48,7 +48,16 @@ application {
     mainClass.set("org.jetbrains.sma.MainKt")
 }
 
+tasks.register<Exec>("pullNodeImage") {
+    group = "docker"
+    description = "Pulls the specified Node.js Docker image."
+
+    commandLine("docker", "pull", "node:23.1.0")
+}
+
 tasks.named<JavaExec>("run") {
+    dependsOn("pullNodeImage")
+
     localProps.orEmpty().forEach { (key, value) ->
         systemProperty(key.toString(), value.toString())
     }
@@ -82,6 +91,8 @@ dependencies {
     }
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
     implementation("io.ktor:ktor-server-content-negotiation:3.1.2")
+
+    implementation(libs.logback.classic)
     testImplementation(kotlin("test"))
     api(libs.kotlin.reflect)
     api(libs.slf4j.api)
