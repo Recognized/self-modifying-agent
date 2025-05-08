@@ -11,14 +11,14 @@ fun RepositoryHandler.jbTeamPackages(
     projectKey: String,
     gradleName: String = repoName.split("-").joinToString("") { it.replaceFirstChar { it.uppercase() } }
 ) {
-    maven {
-        name = gradleName
-        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
-        credentials {
-            username = localProps?.get("spaceUsername") as String? ?: System.getenv("SPACE_USERNAME")
-            password = localProps?.get("spacePassword") as String? ?: System.getenv("SPACE_PASSWORD")
-        }
-    }
+//    maven {
+//        name = gradleName
+//        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
+//        credentials {
+//            username = localProps?.get("spaceUsername") as String? ?: System.getenv("SPACE_USERNAME")
+//            password = localProps?.get("spacePassword") as String? ?: System.getenv("SPACE_PASSWORD")
+//        }
+//    }
 }
 
 fun loadProperties(propertiesFile: File): Properties? {
