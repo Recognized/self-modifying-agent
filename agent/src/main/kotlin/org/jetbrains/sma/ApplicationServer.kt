@@ -122,7 +122,7 @@ class TaskStatus(
 
 fun Application.configureRouting() {
     routing {
-        staticFiles("", projectDir.resolve("static").toFile())
+        staticResources("", "static")
 
         get("/status") {
             call.respond(

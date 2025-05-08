@@ -3,8 +3,6 @@ package org.jetbrains.sma
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import kotlinx.serialization.json.JsonElement
-import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.reflect.KCallable
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMembers
@@ -62,6 +60,5 @@ inline fun <T> JVMLogger.catchAndFail(block: () -> T): T {
 
 val KCallable<*>.template get() = "{${name}}"
 
-val projectDir: Path = log.catchAndFail { Paths.get(System.getProperty("projectDir")!!) }
-val jsEnvDir: Path = log.catchAndFail { projectDir.parent.resolve("js-env") }
-val templateJs = log.catchAndFail { projectDir.resolve("template.js").toFile().bufferedReader().readText() }
+val templateJs =
+    log.catchAndFail { Utils::class.java.getResourceAsStream("/static/template.js")!!.bufferedReader().readText() }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.apache.commons.lang3.SystemUtils.IS_OS_LINUX
 import org.jetbrains.sma.LineType.Error
 import org.jetbrains.sma.LineType.Trace
 import org.jetbrains.sma.prompt.AGENT_DEFINITION
@@ -167,7 +168,8 @@ class Task : CoroutineScope {
                     LLMTool(
                         "error",
                         "LLM request cannot be correctly answered (e.g. due to missing tools).",
-                        LLMTool.Parameters.fromJsonString("""
+                        LLMTool.Parameters.fromJsonString(
+                            """
                         {
                             "type": "object",
                             "properties": {
@@ -178,7 +180,8 @@ class Task : CoroutineScope {
                             },
                             "required": []
                         }
-                        """.trimIndent())
+                        """.trimIndent()
+                        )
                     )
                 )
             },
@@ -253,15 +256,22 @@ class Task : CoroutineScope {
         return iterationIndex == 0 || mountsChanged
     }
 
+    private fun safeSh(command: String): Process {
+        return ProcessBuilder(command.split(" "))
+            .inheritIO()
+            .start()
+    }
+
     private suspend fun recreateContainer() {
         suspendCancellableCoroutine<Unit> { cont ->
             thread {
                 try {
+                    val containerName = "self-modifying-agent-nodejs"
                     task.log.appendLine("Recreating node docker container...")
-                    val process = ProcessBuilder("sh", "./run-docker.sh")
-                        .directory(projectDir.parent.toFile())
-                        .inheritIO()
-                        .start()
+                    safeSh("docker stop $containerName").waitFor()
+                    safeSh("docker rm $containerName").waitFor()
+                    val process =
+                        safeSh("docker run -d -it --name $containerName${if (IS_OS_LINUX) " --network=\"host\"" else ""} node:23.1.0")
                     val timeout = !process.waitFor(1, MINUTES)
                     if (timeout) {
                         cont.resumeWith(Result.failure(Exception("Failed to recreate container. Timeout")))

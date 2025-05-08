@@ -8,15 +8,16 @@ import java.util.concurrent.TimeUnit.MINUTES
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
-import kotlin.io.path.bufferedWriter
 
 class Runner {
     suspend fun run(code: String, log: LogCollector) {
         suspendCancellableCoroutine { cont ->
             thread {
-                val tempMain = Files.createTempFile("", "main.js")
-                tempMain.bufferedWriter().use {
-                    it.write(code)
+                val jsEnvDir = Files.createTempDirectory("js-env")
+                jsEnvDir.resolve("main.js").toFile().writeText(code)
+                val files = listOf("agent.js", "lib.js", "package.json")
+                files.forEach {
+                    jsEnvDir.resolve(it).toFile().writeText(this::class.java.getResourceAsStream("/js-env/$it")!!.bufferedReader().readText())
                 }
 
                 ProcessBuilder(
@@ -24,12 +25,6 @@ class Runner {
                     "cp",
                     "${jsEnvDir.toAbsolutePath().toString().removeSuffix("/")}/.",
                     "self-modifying-agent-nodejs:/usr/src/js-env"
-                ).start().waitFor()
-                ProcessBuilder(
-                    "docker",
-                    "cp",
-                    "${tempMain.toAbsolutePath()}",
-                    "self-modifying-agent-nodejs:/usr/src/js-env/main.js"
                 ).start().waitFor()
 
                 log.appendLine("Starting program execution...")
@@ -42,7 +37,6 @@ class Runner {
                     "node",
                     "agent.js"
                 )
-                    .directory(jsEnvDir.toFile())
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .start()
