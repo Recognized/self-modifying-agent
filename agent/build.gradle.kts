@@ -11,14 +11,14 @@ fun RepositoryHandler.jbTeamPackages(
     projectKey: String,
     gradleName: String = repoName.split("-").joinToString("") { it.replaceFirstChar { it.uppercase() } }
 ) {
-    maven {
-        name = gradleName
-        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
-        credentials {
-            username = localProps?.get("spaceUsername") as String?
-            password = localProps?.get("spacePassword") as String?
-        }
-    }
+//    maven {
+//        name = gradleName
+//        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
+//        credentials {
+//            username = localProps?.get("spaceUsername") as String? ?: System.getenv("SPACE_USERNAME")
+//            password = localProps?.get("spacePassword") as String? ?: System.getenv("SPACE_PASSWORD")
+//        }
+//    }
 }
 
 fun loadProperties(propertiesFile: File): Properties? {
@@ -30,8 +30,41 @@ fun loadProperties(propertiesFile: File): Properties? {
 }
 
 repositories {
+    flatDir {
+        dirs("libs") // Gradle will look for JARs in the 'libs' directory
+    }
+
     mavenCentral()
     jbTeamPackages(repoName = "build-deps", projectKey = "crl")
+}
+
+// 1. Create a custom configuration for dependencies to download
+val downloadLibs: Configuration by configurations.creating
+
+// 3. Create a task to copy these dependencies to the 'libs' directory
+tasks.register<Copy>("downloadDependenciesToLib") {
+    group = "custom"
+    description = "Downloads specified dependencies to the project's 'libs' directory."
+
+    // Ensure the 'libs' directory exists
+    val libsDir = project.layout.projectDirectory.dir("libs")
+    destinationDir = libsDir.asFile
+
+    from(downloadLibs) {
+    }
+
+    doFirst {
+        if (!libsDir.asFile.exists()) {
+            libsDir.asFile.mkdirs()
+        }
+        println("Downloading dependencies to ${libsDir.asFile.absolutePath}...")
+    }
+
+    doLast {
+        println("Dependencies successfully copied to 'libs' directory.")
+        println("Files in libs directory:")
+        libsDir.asFile.listFiles()?.forEach { println(" - ${it.name}") }
+    }
 }
 
 plugins {
@@ -65,7 +98,6 @@ tasks.named<JavaExec>("run") {
 }
 
 
-
 dependencies {
     implementation(libs.apache.sshd.core)
     implementation(libs.bundles.jackson)
@@ -79,7 +111,25 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cio)
 
+    downloadLibs(libs.grazie.model.llm)
     api(libs.grazie.model.llm)
+
+    downloadLibs(libs.grazie.ktor.client) {
+        exclude(group = "io.ktor")
+    }
+    downloadLibs(libs.grazie.ktor.client) {
+        exclude(group = "io.ktor")
+    }
+    downloadLibs(libs.grazie.ktor.utils) {
+        exclude(group = "io.ktor")
+    }
+    downloadLibs(libs.grazie.gateway.api) {
+        exclude(group = "io.ktor")
+    }
+    downloadLibs(libs.grazie.gateway.client) {
+        exclude(group = "io.ktor")
+    }
+
     implementation(libs.grazie.ktor.client) {
         exclude(group = "io.ktor")
     }
