@@ -5,17 +5,6 @@ export async function reflect(key, ...args) {
     if (await shouldReflectRequest(key, args)) {
         await reflectRequest(key, args);
         process.exit(0)
-    } else {
-        console.log(`Already processed reflection point: ${key}`)
-    }
-}
-
-export class ReflectSignal extends Error {
-    constructor(key, args) {
-        super();
-        this.key = key
-        this.args = args
-        this.type = "ReflectSignal"
     }
 }
 

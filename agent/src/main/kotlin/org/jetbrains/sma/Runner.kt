@@ -51,7 +51,7 @@ class Runner {
                     process.inputStream.bufferedReader().use { reader ->
                         while (true) {
                             val line = reader.readLine() ?: break
-                            log.appendLine("[js-env]: $line", Info)
+                            log.appendLine("[js]: $line", Info)
                         }
                     }
                 }
@@ -63,7 +63,7 @@ class Runner {
                     process.errorStream.bufferedReader().use { reader ->
                         while (true) {
                             val line = reader.readLine() ?: break
-                            log.appendLine("[js-env]: $line", Error)
+                            log.appendLine("[js]: $line", Error)
                             lock.withLock {
                                 errorLines.appendLine(line)
                             }

@@ -144,7 +144,7 @@
         overflow-y: auto;
         max-height: 400px;
 
-        padding: 8px 60px 8px 16px;
+        padding: 8px 60px 24px 16px;
 
         color: white;
     }
@@ -269,6 +269,10 @@
         border-right: var(--borderWidth) solid var(--borderColor);
     }
 
+    a {
+        color: lightblue;
+    }
+
     .checkmark {
         display: flex;
         align-items: center;
@@ -287,6 +291,16 @@
 
     .no-shrink {
         flex-shrink: 0;
+    }
+
+    .think-hard {
+        position: absolute;
+        bottom: 4px;
+        right: 68px;
+        display: flex;
+        align-items: center;
+
+        font-size: 13px;
     }
 </style>
 <script>
@@ -437,6 +451,7 @@
             },
             body: JSON.stringify({
                 prompt: prompt,
+                thinkHard: document.getElementById('think-hard').checked,
                 mounts: []
             })
         })
@@ -454,12 +469,17 @@
             <div class="check"></div>
             <div>Task completed</div>
         </div>
+        <h3><a href="https://youtube.com/shorts/qWJUWinWWnQ?si=dm2hDViK34WVUb0Z">Vibe</a></h3>
     </div>
     <div class="horizontal gap16 grow v-shrink">
         <div class="vertical centered grow left-block gap16 v-shrink">
             <div class="prompt-container">
                 <textarea id="prompt" class="prompt" aria-multiline="true" placeholder="What do you want me to do?">I want you to add information that this repo is created by Vladislav Saifulin</textarea>
                 <button class="send-button" onclick="sendPrompt()">Send</button>
+                <div class="gap8 think-hard">
+                    <input type="checkbox" id="think-hard" checked>
+                    Think really hard
+                </div>
             </div>
             <div class="program-container v-shrink" id="code-container">
                 <div class="program-header">

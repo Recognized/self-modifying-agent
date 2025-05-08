@@ -1,6 +1,7 @@
 package org.jetbrains.sma
 
 import ai.grazie.model.cloud.AuthType
+import ai.grazie.model.llm.profile.AnthropicProfileIDs
 
 object Config {
     val grazieToken: String? = System.getProperty("GRAZIE_TOKEN")
@@ -8,5 +9,8 @@ object Config {
         AuthType.entries.firstOrNull { it.name.lowercase() == authType.lowercase() }
     } ?: AuthType.Service
     val grazieUrl = "https://api.app.stgn.grazie.aws.intellij.net"
-    val profile = "google-chat-gemini-flash-2.5"
+    var profile = "google-chat-gemini-flash-2.5"
+//    var proProfile = "google-chat-gemini-pro-2.5"
+    var proProfile = AnthropicProfileIDs.Claude_3_7_Sonnet.id
+    var flashProfile = "google-chat-gemini-flash-2.5"
 }

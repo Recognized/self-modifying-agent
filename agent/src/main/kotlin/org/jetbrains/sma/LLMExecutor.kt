@@ -98,13 +98,13 @@ suspend fun <T> complete(
                         }
                     }
 
-                    if (response != null) {
-                        messages(response!!.llmChatMessages)
-                    }
-
-                    if (error != null) {
-                        messages(error!!.llmChatMessages)
-                    }
+//                    if (response != null) {
+//                        messages(response!!.llmChatMessages)
+//                    }
+//
+//                    if (error != null) {
+//                        messages(error!!.llmChatMessages)
+//                    }
                 }
 
                 builder()

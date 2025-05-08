@@ -73,6 +73,10 @@ class Task : CoroutineScope {
         }
     var iterationIndex = 0
     var code = templateJs
+        set(value) {
+            if (value == field) return
+            field = value
+        }
     var completed = true
     var startedAt = 0L
     var log = LogCollector()
@@ -234,6 +238,7 @@ class Task : CoroutineScope {
                 it.withoutSuspendMarker()
             }
         } ?: fail("Attempt to generate code diff for the next version of the program failed.")
+        logger.info { "Updated code after reflection:\n$editedCode" }
         code = editedCode
         iterationIndex++
     }

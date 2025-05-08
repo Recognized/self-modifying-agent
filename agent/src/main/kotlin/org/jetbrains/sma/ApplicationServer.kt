@@ -105,6 +105,7 @@ suspend fun awaitServer(maxRetries: Int = 30, delayMillis: Long = 1000L): Boolea
 
 class PromptRequest(
     val prompt: String,
+    val thinkHard: Boolean,
     val mounts: List<String>
 )
 
@@ -141,6 +142,7 @@ fun Application.configureRouting() {
             task.awaitMainLoop()
             task.prompt = promptRequest.prompt
             task.mounts = promptRequest.mounts
+            Config.profile = if (promptRequest.thinkHard) Config.proProfile else Config.flashProfile
             task.launchMainLoop()
             call.respond(HttpStatusCode.OK)
         }
