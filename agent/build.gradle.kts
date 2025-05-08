@@ -11,14 +11,14 @@ fun RepositoryHandler.jbTeamPackages(
     projectKey: String,
     gradleName: String = repoName.split("-").joinToString("") { it.replaceFirstChar { it.uppercase() } }
 ) {
-//    maven {
-//        name = gradleName
-//        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
-//        credentials {
-//            username = localProps?.get("spaceUsername") as String? ?: System.getenv("SPACE_USERNAME")
-//            password = localProps?.get("spacePassword") as String? ?: System.getenv("SPACE_PASSWORD")
-//        }
-//    }
+    maven {
+        name = gradleName
+        url = uri("https://packages.jetbrains.team/maven/p/$projectKey/$repoName")
+        credentials {
+            username = localProps?.get("spaceUsername") as String? ?: System.getenv("SPACE_USERNAME")
+            password = localProps?.get("spacePassword") as String? ?: System.getenv("SPACE_PASSWORD")
+        }
+    }
 }
 
 fun loadProperties(propertiesFile: File): Properties? {
@@ -114,21 +114,11 @@ dependencies {
     downloadLibs(libs.grazie.model.llm)
     api(libs.grazie.model.llm)
 
-    downloadLibs(libs.grazie.ktor.client) {
-        exclude(group = "io.ktor")
-    }
-    downloadLibs(libs.grazie.ktor.client) {
-        exclude(group = "io.ktor")
-    }
-    downloadLibs(libs.grazie.ktor.utils) {
-        exclude(group = "io.ktor")
-    }
-    downloadLibs(libs.grazie.gateway.api) {
-        exclude(group = "io.ktor")
-    }
-    downloadLibs(libs.grazie.gateway.client) {
-        exclude(group = "io.ktor")
-    }
+    downloadLibs(libs.grazie.ktor.client)
+    downloadLibs(libs.grazie.ktor.client)
+    downloadLibs(libs.grazie.ktor.utils)
+    downloadLibs(libs.grazie.gateway.api)
+    downloadLibs(libs.grazie.gateway.client)
 
     implementation(libs.grazie.ktor.client) {
         exclude(group = "io.ktor")
